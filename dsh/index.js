@@ -1,25 +1,21 @@
 import Schema from '@deepseek-ai/schemastery'
 import { readFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { Workbench } from './workbench.js'
+import { createWorkbenchRoutes } from './api.js'
 
 export const name = 'traps-workbench-main'
 export const inject = ['webServer', 'connection']
-export const Config = Schema.object({})
+export const Config = Schema.object({ root: Schema.string() })
 const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
 
-export function apply(ctx) {
+export function apply(ctx, config = {}) {
   if (!ctx.webServer?.register) throw new Error('Desktop webServer.register is unavailable')
-  ctx.effect(() => ctx.webServer.register({
-    kind: 'exact', path: '/api/traps-workbench/health',
-    handler(req, res) {
-      const send = (status, body) => {
-        res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
-        res.end(JSON.stringify(body))
-      }
-      if (typeof ctx.connection?.requestRejection !== 'function') return send(503, { error: 'connection authentication capability unavailable' })
-      const rejection = ctx.connection.requestRejection(req)
-      if (rejection !== undefined) return send(rejection, { error: 'Authentication required' })
-      if (req.method !== 'GET') return send(405, { error: 'Method not allowed' })
-      send(200, { ok: true, version: manifest.version, apiVersion: 'v1', capabilities: ['health'] })
-    },
-  }), 'traps-workbench health')
+  const root = resolve(config?.root || join(homedir(), '.traps-workbench'))
+  const workbench = new Workbench({ root })
+  ctx.effect(() => {
+    const cleanups = createWorkbenchRoutes({ ctx, workbench, version: manifest.version }).map((descriptor) => ctx.webServer.register(descriptor))
+    return () => { for (const cleanup of cleanups) { if (typeof cleanup === 'function') cleanup() }; workbench.close() }
+  }, 'traps-workbench API')
 }

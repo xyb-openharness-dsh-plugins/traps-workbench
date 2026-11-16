@@ -6,6 +6,7 @@ import { readFileSync, existsSync, statSync, mkdirSync } from 'node:fs'
 import { join, dirname, extname, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Workbench, forbiddenRoot } from '../dsh/workbench.js'
+import { handleProfileWrite } from '../dsh/profile-route.js'
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
 const PORT = Number(process.env.PORT || 4173)
@@ -44,7 +45,7 @@ const server = http.createServer(async (req, res) => {
     if (u.pathname === '/api/traps-workbench/bootstrap' && req.method === 'GET') return json(res, 200, w.bootstrap())
     if (u.pathname === '/api/traps-workbench/root' && req.method === 'GET') return json(res, 200, { ok: true, ...w.currentRootInfo() })
     if (u.pathname === '/api/traps-workbench/root' && req.method === 'POST') { const b = await body(req); const reason = forbiddenRoot(b.dir); if (reason) return json(res, 400, { error: reason }); return json(res, 200, { ok: true, ...w.setRoot(b.dir) }) }
-    if (u.pathname === '/api/traps-workbench/subjects' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.createProfile(b), bootstrap: w.bootstrap() }) }
+    if (u.pathname === '/api/traps-workbench/subjects' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...handleProfileWrite('POST', '/subjects', b, w), bootstrap: w.bootstrap() }) }
     if (u.pathname === '/api/traps-workbench/entries' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.addEntry(b.profileKey, b.kind, b.data), bootstrap: w.bootstrap() }) }
     if (u.pathname === '/api/traps-workbench/flares' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.addFlare(b.profileKey, b.data), bootstrap: w.bootstrap() }) }
     if (u.pathname === '/api/traps-workbench/privacy' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.setPrivacy(b.profileKey, b.kind, b.id, !!b.private), bootstrap: w.bootstrap() }) }

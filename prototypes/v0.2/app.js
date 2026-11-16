@@ -5,7 +5,7 @@
   'use strict'
 
   var ROUTES = ['dash', 'record', 'metrics', 'trials', 'files', 'settings'];
-  var API = location.protocol === 'file:' || new URLSearchParams(location.search).has('prototype') ? null : '/api/traps'
+  var API = location.protocol === 'file:' || new URLSearchParams(location.search).has('prototype') ? null : '/api/traps-workbench'
   var DEMO = window.DEMO_DATA
   var isHost = false
   try { isHost = window.parent && window.parent !== window } catch (_) { isHost = false }
@@ -13,7 +13,7 @@
 
   var state = {
     data: null, profileId: null, page: 'dash', api: false, ready: false,
-    recordKind: 'symptom', metricsView: 'cards', trialTab: 'match', settingsTab: 'workspace', trialDetail: null,
+    recordKind: 'symptom', metricsView: 'cards', trialTab: 'search', settingsTab: 'workspace', trialDetail: null,
     trialFilters: { keyword: '', subtype: '', status: '', phase: '', country: '', sort: 'updated' },
     matchPref: 'all', savedHidden: {}, bootError: ''
   }
@@ -510,71 +510,19 @@
   }
 
   /* ---------------- 临床研究 ---------------- */
-  function matchRows(p) {
-    var rows = (state.data.trials || []).map(function (t) {
-      var result = window.calcTrialMatch ? window.calcTrialMatch(p, t, { preference: state.matchPref }) : { pct: null, matched: 0, compared: 0, pending: 0, tier: '需补充信息', criteria: [] }
-      return { trial: t, result: result }
-    })
-    var order = { '字段都对得上': 0, '部分对得上': 1, '需补充信息': 2, '硬性条件不满足': 3 }
-    rows.sort(function (a, b) {
-      if (order[a.result.tier] !== order[b.result.tier]) return order[a.result.tier] - order[b.result.tier]
-      return (b.result.pct || -1) - (a.result.pct || -1)
-    })
-    return rows
-  }
   function pageTrials(p) {
     var snap = state.data.trialSnapshot || {}
-    return pageHead('RESEARCH / 04', '临床研究：先看分母，再看线索', '登记信息不是入组资格。这里只做字段对照，把“对得上、对不上、待确认”摊开给你和医生看。',
-      '<button class="btn" data-action="ask-ai-trials">让 AI 帮我列问题</button>') +
+    return pageHead('RESEARCH / 04', '公开研究登记', '按登记号、关键词和登记字段查阅公开记录。这里不将档案与入排条件比对，也不判断个人是否适合参加。', '') +
       '<div class="tabs" role="tablist">' +
-        [['match', '匹配'], ['search', '检索'], ['saved', '收藏与跟踪']].map(function (t) {
+        [['search', '检索'], ['saved', '收藏与跟踪']].map(function (t) {
           return '<button role="tab" data-trial-tab="' + t[0] + '" aria-selected="' + (state.trialTab === t[0]) + '">' + t[1] + '</button>'
         }).join('') + '</div>' +
-      (state.trialTab === 'match' ? trialMatchPage(p, snap) : state.trialTab === 'search' ? trialSearchPage(p, snap) : trialSavedPage(p, snap))
+      (state.trialTab === 'saved' ? trialSavedPage(p, snap) : trialSearchPage(p, snap))
   }
   function poolHead(snap, returned) {
     var recordCount = snap.recordCount == null ? '—' : snap.recordCount
     return '<div class="pool-head"><span>已载 <b>' + recordCount + '</b> 条快照</span><span>本次返回 <b>' + returned + '</b> 条</span><span>不是全库扫描</span><span>快照 <b>' + esc(snap.snapshotDate || '未标注') + '</b></span>' +
       '<span>相关 ' + (snap.relevant == null ? '—' : snap.relevant) + ' 条</span><span class="muted">相关 0 也不等于“没有研究”：检索词命中才进池，通道召回有限。</span></div>'
-  }
-  function trialFacts(p) {
-    var facts = p.facts || []
-    return '<section class="paper pad"><div class="section-head"><h2>已确认的档案字段</h2><span class="hint">只有这些字段参与对照</span></div><div class="fact-grid">' +
-      facts.map(function (f) {
-        return '<div class="fact ' + (Number(f.confirmed) ? '' : 'pending') + '"><div class="k">' + esc(f.label || f.field) + (Number(f.confirmed) ? '' : ' · 待确认') + '</div><div class="v">' + esc(f.value || '未填') + '</div><div class="tiny muted">' + esc(f.source || '') + '</div></div>'
-      }).join('') + '</div><p class="tiny muted" style="margin:10px 0 0">未确认字段不参与匹配；药物靶点不进分母。可对照项少于 2 项时不给百分数。</p></section>'
-  }
-  function trialMatchPage(p, snap) {
-    var rows = matchRows(p)
-    if (!rows.length) return trialFacts(p) + poolHead(snap, 0) + '<div class="empty"><b>本轮没有候选记录</b>不是“没有研究”。通道终态与快照日期见设置 → 临床数据库。</div>'
-    return trialFacts(p) + poolHead(snap, rows.length) +
-      '<div class="section-head"><h2>候选线索</h2><span class="hint">优先显示对不上与待确认；分数不是入组判断</span></div>' +
-      rows.map(function (row) { return matchCard(row.trial, row.result) }).join('') +
-      '<div class="note-box" style="margin-top:18px">登记状态，未核实；登记 ≠ 有效 ≠ 安全 ≠ 可入组。快照会过期，入排原文请到官方登记页核对；是否参加，<b>这一句需要问你的医生</b>。</div>'
-  }
-  function matchCard(t, r) {
-    var criteria = (r.criteria || []).slice().sort(function (a, b) {
-      var order = { no: 0, unknown: 1, yes: 2 }
-      return order[a.state] - order[b.state]
-    })
-    var shown = criteria.slice(0, 4)
-    var score = r.pct == null
-      ? '<div class="score needs"><b>需补充<br>信息</b><span>可对照 &lt; 2 项</span></div>'
-      : '<div class="score"><b>' + r.pct + '%</b><span>登记字段<br>符合度</span></div>'
-    return '<article class="trial-card" data-trial="' + esc(t.trialKey) + '">' + score +
-      '<div class="trial-main"><h3>' + esc(t.title) + '</h3>' +
-      '<div class="trial-meta"><span>' + esc(t.registry) + '</span><span>' + esc(t.phase) + '</span><span>' + esc(t.status) + '</span><span>' + esc(t.sponsor) + '</span><span>' + esc((t.countries || []).join(' / ') || '地区未标注') + '</span></div>' +
-      '<div class="denominator">' + r.matched + ' / ' + r.compared + ' 项对得上 · ' + r.pending + ' 项待确认</div>' +
-      '<div class="criteria">' + shown.map(criterionHtml).join('') + '</div>' +
-      '<div class="trial-foot"><span class="disclaimer">不是入组资格，也不代表效果。</span>' +
-        '<button class="btn sm" data-action="trial-detail" data-key="' + esc(t.trialKey) + '">看证据链</button>' +
-        '<button class="btn sm" data-action="save-trial" data-key="' + esc(t.trialKey) + '">收藏</button></div>' +
-      '</div></article>'
-  }
-  function criterionHtml(c) {
-    var mark = c.state === 'yes' ? '✓' : c.state === 'no' ? '✕' : '?'
-    return '<div class="criterion ' + esc(c.state) + '"><span class="state">' + mark + '</span><div><b>' + esc(c.label) + '</b> ' +
-      '<span class="why">记录里是：' + esc(c.recordText) + '（' + esc(c.source || '未标注') + '） · 条件要求：' + esc(c.requirement) + '</span></div></div>'
   }
   function trialSearchPage(p, snap) {
     var f = state.trialFilters
@@ -603,7 +551,7 @@
       '<div class="trial-list">' + (rows.length ? rows.map(function (t) {
         return '<div class="trial-hit"><div><h3>' + esc(t.title) + '</h3><div class="meta"><span>' + esc(t.registry) + '</span><span>' + esc(t.phase) + '</span><span>' + esc(t.status) + '</span><span>' + esc((t.countries || []).join(' / ')) + '</span></div></div><button class="btn sm go" data-action="trial-detail" data-key="' + esc(t.trialKey) + '">详情</button></div>'
       }).join('') : '<div class="empty"><b>没有命中</b>清空条件重试；检索词命中才进池，不等于没有研究。</div>') + '</div>' +
-      '<div class="note-box" style="margin-top:16px">检索页不显示分数、百分比或排名。匹配只在“匹配”子页按已确认字段对照。</div>'
+      '<div class="note-box" style="margin-top:16px">仅按登记字段筛选，不按个人档案评分或判断入组资格。</div>'
   }
   function trialSavedPage(p, snap) {
     var saved = (p.saved_trials || []).filter(function (s) { return !state.savedHidden[s.trialKey] })
@@ -615,7 +563,7 @@
           '<div class="saved-controls">' + [['in_followup', '在跟'], ['preparing', '准备问'], ['archived', '已归档']].map(function (x) {
             return '<button class="btn sm ' + (s.state === x[0] ? 'primary' : '') + '" data-action="save-state" data-key="' + esc(s.trialKey) + '" data-state="' + x[0] + '">' + x[1] + '</button>'
           }).join('') + '<button class="btn sm text" data-action="reject-trial" data-key="' + esc(s.trialKey) + '">本次不感兴趣</button></div></div>'
-      }).join('') + '</div>' : '<div class="empty"><b>还没有收藏</b>在匹配或检索里看到想留的线索，点“收藏”。收藏只记本机，不等于报名。</div>') +
+      }).join('') + '</div>' : '<div class="empty"><b>还没有收藏</b>在检索里看到想留的线索，点“收藏”。收藏只记本机，不等于报名。</div>') +
       '<div class="note-box" style="margin-top:16px">快照没有登记状态变化时间线，所以这里不画进度条。状态是“在跟 / 准备问 / 已归档”的手工标记。</div>'
   }
 
@@ -648,7 +596,7 @@
   }
   function settingsWorkspace(p) {
     return '<div class="settings-grid">' +
-      '<section class="paper setting-block"><h2>资料目录</h2><p>真选择器选目录；拒绝主目录本身、桌面、下载根目录、tmp。客户端与服务端各判一次。</p>' +
+      '<section class="paper setting-block"><h2>资料目录</h2><p>真选择器选目录；服务端拒绝 $HOME、Desktop、Downloads 和 /tmp 根目录。</p>' +
         '<div class="path-box" id="settings-dir">' + esc((state.data.dataRoot && state.data.dataRoot.dir) || '演示态未接数据库') + '</div>' +
         '<button class="btn" data-action="pick-dir">选择目录</button> <span class="tiny muted">重开 Desktop 应回显同一目录</span></section>' +
       '<section class="paper setting-block"><h2>隐私</h2><p>设为私密的记录不进列表、导出、AI 上下文。这里可取消私密。</p>' +
@@ -714,18 +662,14 @@
     if (!state.trialDetail) { drawerRoot.innerHTML = ''; return }
     var t = findTrial(state.trialDetail)
     if (!t) { drawerRoot.innerHTML = ''; return }
-    var result = window.calcTrialMatch ? window.calcTrialMatch(profile(), t, {}) : { criteria: [], matched: 0, compared: 0, pending: 0, pct: null, tier: '需补充信息' }
-    var criteria = (result.criteria || []).slice().sort(function (a, b) { var o = { no: 0, unknown: 1, yes: 2 }; return o[a.state] - o[b.state] })
     drawerRoot.innerHTML = '<div class="drawer-scrim" data-close-drawer="1"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="td-title">' +
       '<div class="drawer-head"><h2 id="td-title">' + esc(t.title) + '</h2><button class="close" data-close-drawer="1" aria-label="关闭详情">✕</button></div>' +
       '<div class="trial-meta"><span>' + esc(t.registry) + '</span><span>' + esc(t.phase) + '</span><span>' + esc(t.status) + '</span><span>' + esc(t.sponsor) + '</span></div>' +
-      '<p class="denominator">' + result.matched + ' / ' + result.compared + ' 项对得上 · ' + result.pending + ' 项待确认 ' + (result.pct == null ? '· 可对照项不足 2，不给百分数' : '· 登记字段符合度 ' + result.pct + '%') + '</p>' +
-      '<div class="note-box">不是入组资格，也不代表效果。以下是登记字段与档案字段的逐条对照；入排原文请到官方登记页核对。</div>' +
-      '<h3>证据链</h3>' + (criteria.length ? criteria.map(criterionHtml).join('') : '<p>没有可对照字段。</p>') +
-      '<h3>登记信息</h3><p>' + esc(t.summary || '本机快照只存登记的结构化字段。') + '</p>' +
-      '<p class="tiny muted">条件要求来自登记摘要与入排原文；记录里是的值来自档案（含来源）。' + esc(t.snapshotDate || '') + ' 快照。</p>' +
-      (t.sourceUrl ? '<a class="source-link" href="' + esc(t.sourceUrl) + '" target="_blank" rel="noopener noreferrer">打开官方登记页 ↗</a>' : '<p class="tiny muted">本机快照没有官方链接；请按登记号自行检索。</p>') +
-      '<div class="trial-foot" style="margin-top:18px"><button class="btn primary sm" data-action="save-trial" data-key="' + esc(t.trialKey) + '">收藏这条线索</button></div>' +
+      '<div class="note-box">登记信息仅供查阅，状态会变化。是否符合研究条件须由研究团队按完整方案评估；本工具不做个人入组判断。</div>' +
+      '<h3>登记摘要</h3><p>' + esc(t.summary || '本机快照只存公开登记的结构化字段。') + '</p>' +
+      '<p class="tiny muted">来源 ' + esc(t.source || '未标注') + ' · ' + esc(t.snapshotDate || '') + ' 快照。</p>' +
+      (t.sourceUrl ? '<a class="source-link" href="' + esc(t.sourceUrl) + '" target="_blank" rel="noopener noreferrer">打开官方登记页 ↗</a>' : '<p class="tiny muted">本机快照没有官方链接。</p>') +
+      '<div class="trial-foot" style="margin-top:18px"><button class="btn primary sm" data-action="save-trial" data-key="' + esc(t.trialKey) + '">收藏这条登记</button></div>' +
       '</aside>'
     setTimeout(function () { var b = $('.drawer .close'); if (b) b.focus() }, 0)
   }
@@ -858,7 +802,7 @@
   }
   function askTrialAI() {
     var p = profile()
-    var prompt = '请只根据我档案里已记录的内容，帮我整理临床研究页的候选线索：列出每条试验的登记号、我记录里对得上的字段、对不上或待确认的字段，并列出 3 个我下次问医生的问题。不要判断我是否符合入组条件，不要建议我参加或放弃。档案：' + p.name + '；亚型：' + (p.subtype || '未填') + '。'
+    var prompt = '请帮我把公开临床研究登记页中的来源、更新时间、研究目的和需要向研究团队核实的问题整理成清单。不要对照个人病历或判断入组资格，不要提供治疗建议。当前登记线索：' + p.name + '；亚型：' + (p.subtype || '未填') + '。'
     if (!isHost) { toast('AI 对话由 DSH 宿主提供；独立打开时不可用。'); return }
     window.parent.postMessage({ type: 'traps:agent-draft', prompt: prompt }, location.origin)
     toast('已把整理请求填入 AI 草稿；请确认后自行发送。')

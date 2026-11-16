@@ -2,9 +2,9 @@
 
 ## v0.2.0 · 自动走查草案
 
-- HTML：`prototypes/v0.2/index.html`；同源原型 JavaScript/CSS 八件移植至 `public/`。
-- 版本：v0.2.0；`index.html` SHA-256 `80470cd7420c1c4ad156bdf22b011b240e634ca80b6ffb2559112f62322b7aa7`；`app.js` `aa02f910a64fc687dcf9fd8f2ddaf5ebb57645a469972146b34aef693c80f12f`；`demo-data.js` `3cb7770187544970e03092d8a666b035275293554ba677e93d8a8fddb20e955a`；`primer-data.js` `08ae2169a6689a2b7c4d9a6138d39b4b54874cfa915961e2c66b49bd010898a7`。设计引用 `docs/INTERACTION-PATH-DESIGN.md`。
-- 内容：概览、记录（8 类）、检验指标卡/一图秀、公开研究（匹配/检索/关注）、资料摘要、设置、疾病概要整页、两套合成档案。
+- HTML：`prototypes/v0.2/index.html`；同源原型 JavaScript/CSS 七件移植至 `public/`。
+- 版本：v0.2.0；`index.html` SHA-256 `2460af2f3378fdf0d244e5e4c4075c2419e0234b0e5e97888d6875ca1adc639a`；`app.js` `4e1299cd7215949c6baca018399b2cac252766580ec6ae1f7554f9f5c89dec2e`；`demo-data.js` `26f805ac7e88a4d64af2af392715dbc51741a48b0a141520d7f95b3d2a5f18ad`；`primer-data.js` `08ae2169a6689a2b7c4d9a6138d39b4b54874cfa915961e2c66b49bd010898a7`。设计引用 `docs/INTERACTION-PATH-DESIGN.md`。
+- 内容：概览、记录（8 类）、检验指标卡/一图秀、公开登记浏览/检索/收藏（不做个人入组匹配）、资料摘要、设置、疾病概要整页、两套合成档案。
 - 实际预览：Chromium 1365×900 与 390×844；浏览器记录两套档案切换、症状/检验入口、指标卡/一图秀、研究条目、疾病概要打开/关闭；0 页面脚本异常；窄屏 document scrollWidth/clientWidth = 375/375。截图：`docs/screenshots/prototype-{desktop,mobile,record,chart,research,primer}.png`。DSH Desktop customFrame 与原生 Agent 内嵌**未验证**。
 - 数据：程岚（刚完成评估、记录少）与周澄（长期随访、记录多）为纯合成样例，姓名、日期、数值、参考范围均为虚构；禁止真实患者资料入仓。
 - 本机 `file://` 行为：交互可浏览；API 不连接；新增记录仅内存有效、刷新重置。生产写入尚待 M5。
@@ -14,8 +14,8 @@
 |---|---|---|
 | 发作时间线 | 起止/自述/部位/影响/来源入口 | 不作发作判定 |
 | 指标/一图秀 | CRP、ESR、SAA、体温；按单位/方法分组、单线独立归一化 | 原型未做临床分级；样例全合成 |
-| 研究 | 公共登记详情、关键词、收藏、字段范围说明 | 不得作为入组资格；状态要再查登记原文 |
-| 设置 | 资料目录/隐私/来源状态/未接解析说明 | 原型不接本机选择器、不收凭据 |
+| 研究 | 公共登记详情、关键词筛选、收藏 | 不对照个人字段或判断个人入组资格；状态以登记原文为准 |
+| 设置 | 数据根/隐私/来源状态/未接解析说明 | 独立原型目录选择不可获得真实路径；宿主选择器 API 已接线但 Desktop 实机未验证 |
 | 疾病概要 | 四段解释层、来源类型、整页导航 | 需以后更新并核实原件/状态 |
 | Agent | 宿主侧按需入口、草稿/会话合同 | 本地预览无宿主，不能检验实际会话 |
 

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
 export const SRC = join(ROOT, 'prototypes/v0.2')
 export const OUT = join(ROOT, 'public')
-export const FILES = ['index.html', 'app.js', 'style.css', 'demo-data.js', 'primer-data.js', 'primer.js', 'primer.css', 'trial-match.js']
+export const FILES = ['index.html', 'app.js', 'style.css', 'demo-data.js', 'primer-data.js', 'primer.js', 'primer.css']
 export function expected(name) { return readFileSync(join(SRC, name)) }
 
 function check() {
@@ -20,7 +20,7 @@ function check() {
     if (!current.equals(expected(f))) problems.push(`public/${f} 与 prototypes/v0.2 不一致（跑 npm run build:public 后人工复核）`)
   }
   if (problems.length) { console.error('✗ public/ 与原型逐字节移植不一致：\n  ' + problems.join('\n  ')); process.exit(1) }
-  console.log(`✓ public/ 八件与 prototypes/v0.2 逐字节一致（${FILES.length} 件）`)
+  console.log(`✓ public/ 七件与 prototypes/v0.2 逐字节一致（${FILES.length} 件）`)
 }
 function build() {
   mkdirSync(OUT, { recursive: true })

@@ -500,104 +500,102 @@ window.DEMO_DATA = {
   "trials": [
     {
       "trialKey": "NCT02059291",
-      "title": "Canakinumab for the Treatment of TRAPS, HIDS and CRFMF (CLUSTER)",
-      "shortTitle": "CLUSTER：周期性发热综合征",
+      "title": "Study of Efficacy and Safety of Canakinumab in Patients With Hereditary Periodic Fevers",
+      "shortTitle": "Study of Efficacy and Safety of Canakinumab in Patients With Hereditary Periodic Fevers",
       "registry": "NCT02059291",
-      "phase": "Phase 3",
-      "status": "Completed",
-      "studyType": "Interventional",
+      "phase": "PHASE3",
+      "status": "COMPLETED (registry field; verify source record)",
+      "studyType": "INTERVENTIONAL",
       "sponsor": "Novartis Pharmaceuticals",
       "countries": [
-        "多国（登记详情）"
-      ],
-      "startDate": "2014-01-01",
-      "conditions": [
-        "TRAPS",
-        "Tumor Necrosis Factor Receptor-Associated Periodic Syndrome",
-        "Hyperimmunoglobulin D Syndrome",
-        "Familial Mediterranean Fever"
-      ],
-      "source": "ClinicalTrials.gov",
-      "url": "https://clinicaltrials.gov/study/NCT02059291",
-      "eligibilityText": "历史登记；访问快照时研究已完成。请打开登记原文核对，当前不表示招募。",
-      "snapshotDate": "2026-11-16",
-      "fictional": false
-    },
-    {
-      "trialKey": "94-HG-0105",
-      "title": "An Exploratory Study of the Genetics, Pathophysiology, and Natural History of Autoinflammatory Diseases",
-      "shortTitle": "NIH 自炎症病自然史研究",
-      "registry": "94-HG-0105",
-      "phase": "Not applicable",
-      "status": "登记状态需复核",
-      "studyType": "Observational",
-      "sponsor": "National Human Genome Research Institute",
-      "countries": [
+        "Belgium",
+        "Canada",
+        "France",
+        "Germany",
+        "Hungary",
+        "Ireland",
+        "Israel",
+        "Italy",
+        "Japan",
+        "Netherlands",
+        "Russia",
+        "Spain",
+        "Switzerland",
+        "Turkey (Türkiye)",
+        "United Kingdom",
         "United States"
       ],
-      "startDate": "1994-01-01",
+      "startDate": "2014-02-07",
       "conditions": [
-        "TRAPS",
-        "Periodic Fever",
-        "Autoinflammation"
+        "Hereditary Periodic Fevers"
       ],
-      "source": "NIH Clinical Studies",
-      "url": "https://clinicalstudies.info.nih.gov/protocoldetails.aspx?id=94-HG-0105",
-      "eligibilityText": "公开页面说明可能纳入已知或疑似周期热患者及亲属；资格与状态应打开登记页复核。",
+      "source": "ClinicalTrials.gov",
+      "sourceUrl": "https://clinicaltrials.gov/study/NCT02059291",
       "snapshotDate": "2026-11-16",
+      "summary": "",
       "fictional": false
     },
     {
-      "trialKey": "SYNTH-TRAPS-03",
-      "title": "（合成演示）TRAPS 自然史研究条目",
-      "shortTitle": "合成研究条目",
-      "registry": "SYNTH-TRAPS-03",
-      "phase": "未注明",
-      "status": "演示记录",
-      "studyType": "Observational",
-      "sponsor": "合成示例，不是真实研究",
+      "trialKey": "NCT01242813",
+      "title": "Efficacy and Safety Study of ACZ885 in Patients With Active Recurrent or Chronic TNF-receptor Associated Periodic Syndrome (TRAPS).",
+      "shortTitle": "Efficacy and Safety Study of ACZ885 in Patients With Active Recurrent or Chronic TNF-receptor Associated Periodic Syndrome (TRAPS).",
+      "registry": "NCT01242813",
+      "phase": "PHASE2",
+      "status": "COMPLETED (registry field; verify source record)",
+      "studyType": "INTERVENTIONAL",
+      "sponsor": "Novartis Pharmaceuticals",
       "countries": [
-        "—"
+        "Ireland",
+        "Italy",
+        "United Kingdom"
       ],
-      "startDate": "",
+      "startDate": "2010-11-16",
       "conditions": [
-        "TRAPS"
+        "TNF-receptor Associated Periodic Syndromes (TRAPS)"
       ],
-      "source": "合成示例",
-      "url": "",
-      "eligibilityText": "仅用于演示无来源状态，不是真实研究，不可报名。",
+      "source": "ClinicalTrials.gov",
+      "sourceUrl": "https://clinicaltrials.gov/study/NCT01242813",
       "snapshotDate": "2026-11-16",
-      "fictional": true
+      "summary": "",
+      "fictional": false
+    },
+    {
+      "trialKey": "NCT02911857",
+      "title": "An Extention Study of Safety of Canakinumab in Japanese Patients With Periodic Fever Syndromes",
+      "shortTitle": "An Extention Study of Safety of Canakinumab in Japanese Patients With Periodic Fever Syndromes",
+      "registry": "NCT02911857",
+      "phase": "PHASE3",
+      "status": "COMPLETED (registry field; verify source record)",
+      "studyType": "INTERVENTIONAL",
+      "sponsor": "Novartis Pharmaceuticals",
+      "countries": [
+        "Japan"
+      ],
+      "startDate": "2016-09-20",
+      "conditions": [
+        "Periodic Fevers Syndrome"
+      ],
+      "source": "ClinicalTrials.gov",
+      "sourceUrl": "https://clinicaltrials.gov/study/NCT02911857",
+      "snapshotDate": "2026-11-16",
+      "summary": "",
+      "fictional": false
     }
   ],
   "trialSnapshot": {
-    "recordCount": 2,
-    "relevant": 2,
+    "recordCount": 3,
+    "relevant": 3,
     "snapshotDate": "2026-11-16",
     "channels": [
       {
-        "id": "clinicaltrials",
+        "id": "ClinicalTrials.gov",
         "label": "ClinicalTrials.gov",
         "state": "SUCCESS",
-        "count": 1,
-        "note": "登记快照；需以原文复核"
-      },
-      {
-        "id": "nih",
-        "label": "NIH Clinical Studies",
-        "state": "SUCCESS",
-        "count": 1,
-        "note": "官方登记页；状态需复核"
-      },
-      {
-        "id": "who-ictrp",
-        "label": "WHO ICTRP",
-        "state": "NEEDS_SETUP",
-        "count": null,
-        "note": "本轮未获得可核验结构化检索结果，不计为零"
+        "count": 3,
+        "note": "API v2 公共登记元数据，非穷尽种子快照"
       }
     ],
-    "disclaimer": "登记快照会过期；不代表当前招募或个人入组资格。"
+    "disclaimer": "登记状态来自来源当时字段且会变化；不是全库扫描或个人入组资格判断。请查官方登记原文。"
   },
   "groupOrder": [
     "炎症指标",

@@ -4,9 +4,23 @@
 
 TRAPS（TNFRSF1A 相关肿瘤坏死因子受体相关周期性综合征）患者与照护者的本地资料整理工作台。品牌名是占位名，**待用户追认**。概览、发作/症状记录、检验趋势、公开研究登记、复诊摘要和资料来源说明共同支持按日期与来源回看信息。
 
+## 疾病概要
+
+### 定义
+TRAPS 是与 TNFRSF1A 相关的罕见自炎症性周期发热综合征。此处为通俗背景说明，不用于确认个人诊断；参见 [NIH GeneReviews](https://www.ncbi.nlm.nih.gov/books/NBK586171/)。访问日期：2026-11-16。
+
+### 医学资料规范和指南情况
+工作台仅链接公开注册信息与医学文献，保留来源、登记号和检索日期。已有 EULAR/ACR 自炎症疾病分类与管理建议文献可作背景阅读，但尚未完成本地临床适用性审查；参见 [PMC9531906](https://pmc.ncbi.nlm.nih.gov/articles/PMC9531906/)。访问日期：2026-11-16。
+
+### 目前治疗全景概要
+本工作台不提供治疗或用药建议、不承诺疗效。用户可以整理自己已有的资料并与医生讨论；个体治疗决策应由患者与专业医疗团队共同作出。GeneReviews 和指南为二次医学资料，不代替专业意见。
+
+### 发展趋势
+公开研究登记快照包含 3 条与 TRAPS 相关的 ClinicalTrials.gov 记录，是 2026-11-16 获取的非穷尽种子集。快照状态会变化，具体方案和当前招募情况以 [ClinicalTrials.gov](https://clinicaltrials.gov/) 原始登记页为准。自然史登记可见 [NIH 94-HG-0105](https://clinicalstudies.info.nih.gov/protocoldetails.aspx?id=94-HG-0105)。访问日期：2026-11-16。
+
 ## 开发顺序
 
-HTML 原型：[`prototypes/v0.2/index.html`](prototypes/v0.2/index.html)，交互路径与自动评审记录见 [`docs/PROTOTYPE-REVIEW.md`](docs/PROTOTYPE-REVIEW.md)。所有页面示例档案为合成数据。M2 原型写入仅内存，服务端生产能力正在 M3–M5 阶段实现。
+HTML 原型：[`prototypes/v0.2/index.html`](prototypes/v0.2/index.html)，交互路径与自动评审记录见 [`docs/PROTOTYPE-REVIEW.md`](docs/PROTOTYPE-REVIEW.md)。所有页面示例档案为合成数据。M2 原型写入仅内存；M3–M5 已实现 SQLite 服务层及宿主 API 代码，Desktop 实机验证仍未完成。
 
 ## 当前能力
 
