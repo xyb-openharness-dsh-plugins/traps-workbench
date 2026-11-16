@@ -4,7 +4,7 @@
 
 ## 当前里程碑
 
-M0–M3 已完成并推送；M4–M9 进行中。
+M0–M4 已完成并推送；M5–M9 进行中。
 
 ## 已完成
 
@@ -16,9 +16,11 @@ M0–M3 已完成并推送；M4–M9 进行中。
 
 - M3：冻结 TRAPS 初始 SQLite schema（14 表），发作区间与逐时观察为一等实体；记录来源、隐私/撤销边界及迁移策略。`node scripts/check-schema.mjs .` 9 项全过。并发/恢复和桌面宿主运行未验证。
 
+- M4：以 ClinicalTrials.gov API v2 公开登记构建 3 条 TRAPS 种子快照（非穷尽），JSONL/SQLite 一致性、manifest 哈希、来源日期核对通过；清除了随模板带入的 MPN 试验快照。无患者级数据。
+
 ## 下一步
 
-1. M4–M5：仅用公开研究快照/合成患者资料接通 API、SQLite 与宿主会话契约。
+1. M5：仅用公开研究快照/合成患者资料接通 API、SQLite 与宿主会话契约。
 3. M6–M9：pack/profile 可执行项、草稿、全量自检与报告；Desktop 实机不在 sam 验证。
 
 ## 阻塞与未验证

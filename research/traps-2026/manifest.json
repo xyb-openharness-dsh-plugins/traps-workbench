@@ -1,0 +1,28 @@
+{
+  "slug": "traps",
+  "disease": "TNF receptor-associated periodic syndrome (TRAPS)",
+  "snapshotDate": "2026-11-16",
+  "retrievedAt": "2026-11-16T23:06:49Z",
+  "source": "ClinicalTrials.gov API v2 (public registry metadata)",
+  "sourceVersion": "v2",
+  "queries": [
+    "TRAPS",
+    "TNF receptor associated periodic syndrome",
+    "tumor necrosis factor receptor associated periodic syndrome"
+  ],
+  "recordCount": 3,
+  "dbCount": 3,
+  "relevant": 3,
+  "sourceStatusRows": 3,
+  "files": {
+    "trials-2026.jsonl": {
+      "sha256": "3201f9835c43f1dc63e6c9134271ea907040018ba31d902c80ddda49f9badab0",
+      "bytes": 1791
+    },
+    "traps_trials_2026.sqlite": {
+      "sha256": "0049e476dc4e5e37fbbe4e86172e09c50c939795eaf45eca9de5662c4341eb71",
+      "bytes": 20480
+    }
+  },
+  "scopeNote": "Three seeded registrations, not exhaustive. Status as returned at retrieval. No patient-level data."
+}
