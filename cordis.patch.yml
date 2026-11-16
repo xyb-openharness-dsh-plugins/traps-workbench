@@ -1,0 +1,6 @@
+- insert:
+    - id: traps-workbench-main
+      name: "@xyb-community/traps-workbench"
+      # config.root 指向 Desktop 工作台宿主目录（dshHomePath 由宿主解析）
+      config:
+        root: !!js dshHomePath('traps-workbench')
