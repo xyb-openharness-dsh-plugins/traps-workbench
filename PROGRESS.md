@@ -4,7 +4,7 @@
 
 ## 当前里程碑
 
-M0–M6 已完成并推送；M7–M9 进行中。
+M0–M7 已完成并推送；M8–M9 进行中。
 
 ## 已完成
 
@@ -22,9 +22,11 @@ M0–M6 已完成并推送；M7–M9 进行中。
 
 - M6：`npm run pack:check`（dry-run，48 个文件含 SQLite 快照）、`npm run smoke:activate`（桩宿主 apply/register/两种会话形态）和包静态检查通过。`node scripts/check-install.mjs` 显示本机没有 DSH Desktop，故 profile 安装、退出重开、点击走查均未验证；桩宿主烟测不等于装机。
 
+- M7：Release 草稿仅在 `docs/RELEASE-DRAFT.md`，注明 0.2.0、占位品牌、医学边界与发布阻塞；未发布、未打 tag。
+
 ## 下一步
 
-1. M7/M8：仅用公开研究快照/合成患者资料接通 API、SQLite 与宿主会话契约。
+1. M8：仅用公开研究快照/合成患者资料接通 API、SQLite 与宿主会话契约。
 3. M6–M9：pack/profile 可执行项、草稿、全量自检与报告；Desktop 实机不在 sam 验证。
 
 ## 阻塞与未验证
