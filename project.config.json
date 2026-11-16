@@ -1,0 +1,17 @@
+{
+  "packageName": "@community/traps-workbench",
+  "title": "TRAPS 工作台（占位名，待用户追认）",
+  "repository": "https://github.com/xyb-openharness-dsh-plugins/traps-workbench",
+  "description": "供 TRAPS 患者与照护者整理发作、症状、检验与临床研究公开信息的工作台；不提供诊断或用药建议",
+  "slug": "traps-workbench",
+  "layoutMode": "business-first",
+  "businessWidth": 0.65,
+  "targetUsers": "TRAPS 患者与照护者；医生审核仅为后续待验证环节",
+  "scenario": "记录周期性发作与日常症状，汇总可追溯的检验和就诊资料，并查看公开临床研究信息",
+  "coreFlow": [
+    "选择或创建本地合成档案，查看发作与记录概览",
+    "记录一次发作、症状、检验或就诊事件并标注来源",
+    "回顾时间轴和公开研究条目，整理可带去咨询医生的问题"
+  ],
+  "completion": "新增记录可追溯到来源并显示在档案时间轴；公开研究条目显示登记来源和访问日期；任何治疗选择问题均引导咨询医生"
+}

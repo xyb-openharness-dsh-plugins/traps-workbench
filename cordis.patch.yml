@@ -1,0 +1,3 @@
+- insert:
+    - id: traps-workbench-main
+      name: "@community/traps-workbench"
