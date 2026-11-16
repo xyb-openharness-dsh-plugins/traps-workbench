@@ -4,8 +4,11 @@ import { readFile, readdir } from 'node:fs/promises'
 import { DatabaseSync } from 'node:sqlite'
 import { dirname, join, resolve } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
+import { spawnSync } from 'node:child_process'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 
-const args=process.argv.slice(2), optional=args.includes('--if-present')
+const args=process.argv.slice(2), optional=args.includes('--if-present'), SELF_TEST=args.includes('--self-test')
 const positional=args.filter((arg)=>!arg.startsWith('-'))
 const target=resolve(positional[0]||'.'), errors=[]
 const sha256=(bytes)=>createHash('sha256').update(bytes).digest('hex')
@@ -115,6 +118,33 @@ async function checkSnapshot(dir) {
  finally{db.close()}
 }
 
+/* --self-test：先造一个合法快照（必须 PASS），再改坏 JSONL（必须 FAIL）。
+   证明对账不是“只会在空目录报错”，字段/hash/计数任一漂移都能红。 */
+if (SELF_TEST) {
+ const root=mkdtempSync(join(tmpdir(),'mpn-snapshot-selftest-'))
+ const row={recordId:'NCT00000001',mergedSources:['ctv'],sourceId:'ctv',title:'Self-test trial',studyType:'Interventional',sponsor:['Test Sponsor'],registryNumbers:['NCT00000001'],dates:{start:'2026-01-01'},sourceUrl:'https://clinicaltrials.gov/study/NCT00000001',retrievedAt:'2026-11-15T00:00:00.000Z',statusNote:'登记状态，未核实',snapshotDate:'2026-11-15'}
+ const make=async(dir,tamper,hashTamper)=>{
+  mkdirSync(dir,{recursive:true})
+  const jsonl=JSON.stringify(row)+'\n'
+  writeFileSync(join(dir,'trials.jsonl'),jsonl)
+  const db=new DatabaseSync(join(dir,'trials.sqlite'))
+  db.exec(`CREATE TABLE trials(record_id TEXT PRIMARY KEY,merged_sources TEXT,source_id TEXT,title TEXT,study_type TEXT,sponsors TEXT,registry_numbers TEXT,dates TEXT,source_url TEXT,retrieved_at TEXT,status_note TEXT,snapshot_date TEXT,conditions_json TEXT,phase_json TEXT,countries_json TEXT,eligibility_text TEXT,summary TEXT,raw_json TEXT,relevant INTEGER);
+   CREATE TABLE source_statuses(query TEXT,source_id TEXT,state TEXT);`)
+  db.prepare(`INSERT INTO trials VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(row.recordId,JSON.stringify(row.mergedSources),row.sourceId,tamper?row.title+' TAMPERED':row.title,row.studyType,JSON.stringify(row.sponsor),JSON.stringify(row.registryNumbers),JSON.stringify(row.dates),row.sourceUrl,row.retrievedAt,row.statusNote,row.snapshotDate,'[]','[]','[]','','',JSON.stringify(row),1)
+  db.prepare('INSERT INTO source_statuses VALUES(?,?,?)').run('myelofibrosis','ctv','SUCCESS')
+  db.close()
+  const manifest={snapshotDate:row.snapshotDate,recordCount:1,dbCount:1,sourceStatusRows:1,files:{'trials.jsonl':{sha256:hashTamper?'0'.repeat(64):sha256(Buffer.from(jsonl)),bytes:Buffer.byteLength(jsonl)},'trials.sqlite':{sha256:sha256(await readFile(join(dir,'trials.sqlite'))),bytes:1}}}
+  writeFileSync(join(dir,'manifest.json'),JSON.stringify(manifest,null,2))
+ }
+ const goodDir=join(root,'good'), badDir=join(root,'bad'), hashDir=join(root,'hash')
+ await make(goodDir,false); await make(badDir,true); await make(hashDir,false,true)
+ const run=(dir)=>spawnSync(process.execPath,[new URL(import.meta.url).pathname,dir],{encoding:'utf8'})
+ const good=run(goodDir), bad=run(badDir), hashBad=run(hashDir)
+ const ok=good.status===0&&bad.status!==0&&hashBad.status!==0&&/FAIL/.test(bad.stdout+bad.stderr)&&/SHA-256/.test(hashBad.stdout+hashBad.stderr)
+ console.log(JSON.stringify({selfTest:ok?'PASS':'FAIL',goodExit:good.status,badExit:bad.status,hashExit:hashBad.status,badMessage:(bad.stderr||bad.stdout).split('\n').filter((l)=>l.startsWith('FAIL')).slice(0,2),hashMessage:(hashBad.stderr||hashBad.stdout).split('\n').filter((l)=>l.includes('SHA-256')).slice(0,2)},null,2))
+ rmSync(root,{recursive:true,force:true})
+ process.exit(ok?0:1)
+}
 let snapshots=[]
 try{
  const stat=await import('node:fs/promises').then(({stat})=>stat(target))

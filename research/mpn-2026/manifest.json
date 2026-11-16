@@ -1,0 +1,127 @@
+{
+  "slug": "mpn",
+  "disease": "myeloproliferative neoplasms (PV / ET / PMF)",
+  "snapshotDate": "2026-11-15",
+  "retrievedAt": "2026-11-15T11:06:29.911Z",
+  "source": "unified-trial-mcp (MCP stdio)",
+  "sourceVersion": "0.3.1",
+  "queries": [
+    {
+      "query": "myelofibrosis",
+      "total": 3,
+      "returned": 3
+    },
+    {
+      "query": "polycythemia vera",
+      "total": 2,
+      "returned": 2
+    },
+    {
+      "query": "essential thrombocythemia",
+      "total": 3,
+      "returned": 3
+    },
+    {
+      "query": "myeloproliferative neoplasms",
+      "total": 1,
+      "returned": 1
+    }
+  ],
+  "recordCount": 3,
+  "dbCount": 3,
+  "relevant": 3,
+  "sourceStatusRows": 24,
+  "files": {
+    "trials-2026.jsonl": {
+      "sha256": "860350012a52d034e131aa4ecc9d7ea26f1cd0780cf9674488472d131300e646",
+      "bytes": 16516
+    },
+    "mpn_trials_2026.sqlite": {
+      "sha256": "8925673839eee5183183a92a50ce6305370d26b13fae45bb9ef6b3bd23e7cd0b",
+      "bytes": 106496
+    }
+  },
+  "channels": [
+    {
+      "id": "chinadrugtrials",
+      "state": "NO_RESULTS",
+      "records": 0
+    },
+    {
+      "id": "xyb_chinadrugtrials_archive",
+      "state": "NEEDS_SETUP",
+      "records": 0
+    },
+    {
+      "id": "chictr_online",
+      "state": "FAILED",
+      "records": 0
+    },
+    {
+      "id": "chictr_pancreatic_archive",
+      "state": "NEEDS_SETUP",
+      "records": 0
+    },
+    {
+      "id": "ctv",
+      "state": "SUCCESS",
+      "records": 3
+    },
+    {
+      "id": "ictrp",
+      "state": "FAILED",
+      "records": 0
+    }
+  ],
+  "failed": [
+    {
+      "query": "myelofibrosis",
+      "source": "chictr_online",
+      "state": "FAILED",
+      "reason": "UPSTREAM_MCP_FAILED"
+    },
+    {
+      "query": "myelofibrosis",
+      "source": "ictrp",
+      "state": "FAILED",
+      "reason": "UPSTREAM_UNKNOWN_ERROR"
+    },
+    {
+      "query": "polycythemia vera",
+      "source": "chictr_online",
+      "state": "FAILED",
+      "reason": "UPSTREAM_MCP_FAILED"
+    },
+    {
+      "query": "polycythemia vera",
+      "source": "ictrp",
+      "state": "FAILED",
+      "reason": "UPSTREAM_UNKNOWN_ERROR"
+    },
+    {
+      "query": "essential thrombocythemia",
+      "source": "chictr_online",
+      "state": "FAILED",
+      "reason": "UPSTREAM_MCP_FAILED"
+    },
+    {
+      "query": "essential thrombocythemia",
+      "source": "ictrp",
+      "state": "FAILED",
+      "reason": "UPSTREAM_UNKNOWN_ERROR"
+    },
+    {
+      "query": "myeloproliferative neoplasms",
+      "source": "chictr_online",
+      "state": "FAILED",
+      "reason": "UPSTREAM_MCP_FAILED"
+    },
+    {
+      "query": "myeloproliferative neoplasms",
+      "source": "ictrp",
+      "state": "FAILED",
+      "reason": "UPSTREAM_UNKNOWN_ERROR"
+    }
+  ],
+  "coverageNote": "本地快照 + 在线通道；FAILED/NEEDS_SETUP 不算查过，不计覆盖率；不是全库扫描。"
+}

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="color-scheme" content="light">
+<title>小髓宝 MPN 患者工作台 · 交互原型 v0.2</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23f6f3ec'/%3E%3Ccircle cx='13' cy='13' r='6' fill='%232f5d4e'/%3E%3Ccircle cx='20' cy='18' r='6' fill='%23b4552d' fill-opacity='.72'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="primer.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 32 32" role="img" aria-label="小髓宝标记：两枚重叠的造血细胞">
+      <circle cx="12.5" cy="12.5" r="7.2" fill="none" stroke="#2f5d4e" stroke-width="1.7"/>
+      <circle cx="20.5" cy="19" r="7.2" fill="none" stroke="#b4552d" stroke-width="1.7"/>
+      <circle cx="12.5" cy="12.5" r="2.2" fill="#2f5d4e"/>
+    </svg>
+    <strong>小髓宝</strong>
+    <span class="ver-chip" id="ver-chip">v0.2.0</span>
+  </div>
+  <div class="top-status" id="top-status">正在连接本机数据库…</div>
+  <div class="top-actions">
+    <span class="tiny muted" id="app-mode" style="margin-right:4px">连接中</span>
+    <button class="icon-btn" type="button" data-primer-open data-primer-entry="top" aria-haspopup="dialog" aria-controls="disease-primer" aria-label="疾病概要：定义、医学资料与指南情况、治疗全景、发展趋势" title="疾病概要">?</button>
+    <button class="btn ghost dir-only" type="button" id="dir-btn">资料目录</button>
+    <button class="btn primary ai-only" type="button" id="ai-btn">AI 对话</button>
+  </div>
+</header>
+<div id="app" aria-live="polite"></div>
+<div id="modal-root"></div>
+<div id="drawer-root"></div>
+<div id="toast-root"></div>
+
+<script src="demo-data.js"></script>
+<script src="primer-data.js"></script>
+<script src="primer.js"></script>
+<script src="trial-match.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

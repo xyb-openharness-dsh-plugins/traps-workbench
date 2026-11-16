@@ -80,7 +80,7 @@ async function main() {
   if (!chrome) { console.log('找不到 Chrome：设置 CHROME_PATH 后重试。跳过等于没有这条闸门。'); process.exit(2) }
   let puppeteer
   try {
-    const require = createRequire('/Users/qinxiaoqiang/.workbuddy/binaries/node/workspace/')
+    const require = createRequire(import.meta.url)
     puppeteer = require('puppeteer-core')
   } catch {
     console.log('缺少 puppeteer-core（家族 workspace 未装，或本机路径不同）。跳过等于没有这条闸门。')
@@ -110,7 +110,7 @@ async function main() {
   const browser = await puppeteer.launch({
     executablePath: chrome,
     headless: 'new',
-    args: ['--no-sandbox', '--disable-dev-shm-usage', '--proxy-server=' + (process.env.http_proxy || 'http://127.0.0.1:7890')]
+    args: ['--no-sandbox', '--disable-dev-shm-usage'].concat(process.env.PROBE_PROXY ? ['--proxy-server=' + process.env.PROBE_PROXY] : [])
   })
 
   try {
@@ -305,8 +305,8 @@ async function main() {
 
     const fails = results.filter((r) => !r.ok)
     console.log(`\n  ${results.length - fails.length}/${results.length} 通过${fails.length ? ` · ${fails.length} 失败` : ''}${SELF_TEST ? '（自测：应至少 3 条 FAIL）' : ''}\n`)
-    if (fails.length) process.exitCode = 1
-    if (SELF_TEST) { console.log(fails.length >= 3 ? '自测通过：闸门确实会报红。\n' : '自测失败：注入缺陷后 FAIL 不足 3 条，闸门漏检。\n'); if (fails.length < 3) process.exitCode = 1 }
+    if (fails.length && !SELF_TEST) process.exitCode = 1
+    if (SELF_TEST) { console.log(fails.length >= 3 ? '自测通过：闸门确实会报红。\n' : '自测失败：注入缺陷后 FAIL 不足 3 条，闸门漏检。\n'); process.exitCode = fails.length >= 3 ? 0 : 1 }
   } finally {
     await browser.close()
     server.close()
