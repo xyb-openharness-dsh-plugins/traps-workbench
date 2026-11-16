@@ -1,6 +1,6 @@
 {
   "name": "@community/traps-workbench",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "供 TRAPS 患者与照护者整理发作、症状、检验与临床研究公开信息的工作台；不提供诊断或用药建议",
   "private": true,
   "type": "module",
@@ -13,11 +13,17 @@
   },
   "files": [
     "dsh",
+    "public",
+    "prototypes",
     "lib",
     "assets",
+    "schema",
+    "research",
+    "data",
     "cordis.patch.yml",
     "README.md",
-    "NOTICE.md"
+    "NOTICE.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "check": "node --check dsh/index.js && node --check lib/client.js && node scripts/check-workbench-package.mjs . && node scripts/check-host-contract.mjs && node scripts/smoke-activate.mjs && node scripts/check-probe-coverage.mjs && node scripts/check-version-literal.mjs && node scripts/check-static-refs.mjs && node scripts/check-choice-limit.mjs && node scripts/check-assertion-strength.mjs && node scripts/check-derivative-leftovers.mjs . && node scripts/check-trial-snapshot.mjs . --if-present && node scripts/check-primer-links.mjs && node scripts/check-agent-pane-contract.mjs . && node scripts/check-data-dir.mjs . && node scripts/check-trial-chain.mjs . && node scripts/check-patient-create.mjs . && node scripts/check-schema-words.mjs . && node scripts/check-placeholder-free.mjs . && node scripts/check-wording.mjs .",

@@ -1,11 +1,11 @@
-/* 小髓宝 MPN 患者工作台 · 业务界面
+/* TRAPS 工作台（占位名，待用户追认）· 业务界面
    原则：只整理记录，不做个体判断；没有 API 时明示“演示态，刷新重置”。
-   同一份文件被 scripts/migrate-public.mjs 逐字节复制到 public/，开发版由 /api/mpn 提供数据。 */
+   同一份文件被 scripts/migrate-public.mjs 逐字节复制到 public/，开发版由 /api/traps 提供数据。 */
 (function () {
   'use strict'
 
   var ROUTES = ['dash', 'record', 'metrics', 'trials', 'files', 'settings'];
-  var API = location.protocol === 'file:' ? null : '/api/mpn'
+  var API = location.protocol === 'file:' || new URLSearchParams(location.search).has('prototype') ? null : '/api/traps'
   var DEMO = window.DEMO_DATA
   var isHost = false
   try { isHost = window.parent && window.parent !== window } catch (_) { isHost = false }
@@ -29,9 +29,9 @@
     { id: 'files', label: '资料', num: '05' },
     { id: 'settings', label: '设置', num: '06' }
   ]
-  var COLORS = { Hb: '#b4552d', PLT: '#2f5d4e', WBC: '#7c6c48', LDH: '#4d6f82', Spleen: '#8a4f5e', Weight: '#5f6b4e' }
-  var GROUP_ORDER = (DEMO && DEMO.groupOrder) || ['血细胞', '炎症与代谢', '脾脏与体型', '其他']
-  var CATEGORY_ORDER = { '血细胞': 0, '炎症与代谢': 1, '脾脏与体型': 2, '其他': 3 }
+  var COLORS = { CRP: '#b4552d', ESR: '#2f5d4e', SAA: '#7c6c48', TEMP: '#4d6f82' }
+  var GROUP_ORDER = (DEMO && DEMO.groupOrder) || ['炎症指标', '发作观察', '其他']
+  var CATEGORY_ORDER = { '炎症指标': 0, '发作观察': 1, '其他': 2 }
 
   /* ---------------- 基础工具 ---------------- */
   function esc(value) {
@@ -96,7 +96,7 @@
     }
     d.TODAY = d.TODAY || new Date().toISOString().slice(0, 10)
     if (!state.profileId) {
-      try { var savedId = localStorage.getItem('mpn.profileId'); if (savedId && d.profiles.some(function (p) { return p.id === savedId })) state.profileId = savedId } catch (_) { /* 隐私模式 */ }
+      try { var savedId = localStorage.getItem('traps.profileId'); if (savedId && d.profiles.some(function (p) { return p.id === savedId })) state.profileId = savedId } catch (_) { /* 隐私模式 */ }
     }
     if (!state.profileId || !d.profiles.some(function (p) { return p.id === state.profileId })) state.profileId = d.profiles[0] ? d.profiles[0].id : null
   }
@@ -152,13 +152,13 @@
     }
     var mode = document.getElementById('app-mode')
     if (mode) mode.textContent = state.api ? 'sqlite · 已连接' : '演示态 · 未写库'
-    document.title = '小髓宝 MPN · ' + (PAGES.find(function (x) { return x.id === state.page; }) || {}).label
+    document.title = 'TRAPS 工作台 · ' + (PAGES.find(function (x) { return x.id === state.page; }) || {}).label
   }
   function rail(p) {
     var isDemo = Number(p.is_demo) === 1
     return '<aside class="rail" aria-label="档案与导航">' +
       '<button class="rail-profile" type="button" data-action="profiles" aria-haspopup="dialog">' +
-        '<span class="tag"><span class="badge ' + (isDemo ? 'clay' : 'green') + '">' + (isDemo ? '合成示例' : '我的档案') + '</span>' + esc(p.subtype || 'MPN') + '</span>' +
+        '<span class="tag"><span class="badge ' + (isDemo ? 'clay' : 'green') + '">' + (isDemo ? '合成示例' : '我的档案') + '</span>TRAPS</span>' +
         '<strong>' + esc(p.name) + '</strong>' +
         '<span class="switch">切换 / 新建档案 →</span>' +
       '</button>' +
@@ -171,7 +171,7 @@
       '</div></aside>'
   }
   function footer() {
-    return '<footer class="foot"><div class="fleft"><span>小髓宝 · MPN 患者工作台</span><span>版本 <b id="app-version">v0.2.0</b></span><span>更新 <b id="app-build">2026-11-15</b></span></div><span>0 患者访谈 · 0 临床审核 · 内容待追认</span></footer>'
+    return '<footer class="foot"><div class="fleft"><span>TRAPS 工作台（占位名，待用户追认）</span><span>版本 <b id="app-version">v0.2.0</b></span><span>更新 <b id="app-build">2026-11-16</b></span></div><span>0 患者访谈 · 0 临床审核 · 内容待追认</span></footer>'
   }
   function pageHead(eyebrow, title, desc, actions) {
     return '<header class="page-head"><div class="head-text"><p class="eyebrow">' + esc(eyebrow) + '</p><h1>' + esc(title) + '</h1>' +
@@ -189,15 +189,15 @@
     var questions = entries.filter(function (e) { return e.kind === 'question' })
     var recent = entries.slice(0, 4)
     if (!metrics.length && !entries.length) {
-      return pageHead('OVERVIEW / 01', '从第一条记录开始', '这个档案还是空的。先记一次血常规、一个症状，或者一个下次要问医生的问题。',
+      return pageHead('OVERVIEW / 01', '从第一条记录开始', '这个档案还是空的。先记一次发作观察、检验报告或下次想问医生的问题。',
         '<button class="btn primary" data-nav="record">＋ 记一条</button>') +
         '<div class="empty"><b>空档案不是错误</b>你可以从任意一类开始；没有记录时，本台不会借用别人的数据填充。</div>'
     }
     var stats = [
-      ['血红蛋白', latest.Hb, 'Hb'],
-      ['血小板', latest.PLT, 'PLT'],
-      ['白细胞', latest.WBC, 'WBC'],
-      ['脾脏长径', latest.Spleen, 'Spleen']
+      ['C反应蛋白', latest.CRP, 'CRP'],
+      ['红细胞沉降率', latest.ESR, 'ESR'],
+      ['血清淀粉样蛋白A', latest.SAA, 'SAA'],
+      ['体温观察', latest.TEMP, 'TEMP']
     ].map(function (x) {
       var m = x[1]
       return '<div class="stat"><div class="k">' + x[0] + '</div><div class="v">' + (m ? fmtNum(m.value) : '—') + '</div>' +
@@ -218,14 +218,14 @@
       }
       return '<div class="symptom-bar"><div class="top"><span>' + esc(e.title || '症状') + '</span><span class="mono">' + fmtNum(score) + ' / 10</span></div>' +
         '<div class="track"><div class="fill" style="width:' + Math.max(0, Math.min(100, score * 10)) + '%"></div></div><div class="tiny muted">' + fmtDate(e.date) + '</div></div>'
-    }).join('') + '</div>' : '<div class="empty"><b>还没有症状记录</b>疲劳、瘙痒、骨痛、腹胀都可以记；0–10 只是你的自评。</div>'
-    return pageHead('OVERVIEW / 01', '今天要带走的，先放在这里', '只看你记过的事。病程天数、最近指标、症状和问题，都跟着当前档案走。',
+    }).join('') + '</div>' : '<div class="empty"><b>还没有症状记录</b>发热、肌肉疼痛、皮疹或其他观察都可以记；自评分只是个人感受。</div>'
+    return pageHead('OVERVIEW / 01', '今天要带走的，先放在这里', '只看当前档案中你记录的发作、检验、症状和复诊问题。',
       '<button class="btn" data-nav="metrics">看趋势</button><button class="btn primary" data-action="new-record">＋ 记一条</button>') +
       '<div class="status-grid">' +
         '<section class="paper status-hero" aria-label="当前病程状态">' +
           '<div class="status-top"><span class="badge ' + (Number(p.is_demo) === 1 ? 'clay' : 'green') + '">' + (Number(p.is_demo) === 1 ? '合成示例' : '我的档案') + '</span>' +
-            '<span class="badge">' + esc(p.subtype || 'MPN') + '</span><span class="badge">' + esc(p.tag || '随访中') + '</span></div>' +
-          (days != null ? '<p class="days"><b>' + days + '</b><span>天 · 从 ' + fmtDate(p.diagnosed_on) + ' 起</span></p>' : '<p class="days"><b>—</b><span>确诊日期未填</span></p>') +
+            '<span class="badge">TRAPS</span><span class="badge">' + esc(p.tag || '资料整理中') + '</span></div>' +
+          (days != null ? '<p class="days"><b>' + days + '</b><span>天 · 从档案日期 ' + fmtDate(p.diagnosed_on) + ' 起</span></p>' : '<p class="days"><b>—</b><span>档案日期未填</span></p>') +
           '<h2>' + esc(p.name) + '</h2><p class="lead">' + esc(p.summary || '还没有摘要。记录几条之后，这里会显示最近的状态。') + '</p>' +
           '<div class="stats-strip">' + stats + '</div>' +
           '<div class="note-box">本台只整理记录，不判断病情好坏。指标怎么看、下一步做什么，<b>这一句需要问你的医生</b>。</div>' +
@@ -239,9 +239,9 @@
           '<section class="paper pad" aria-label="今日三件事">' +
             '<p class="kicker">TODAY / 3 THINGS</p>' +
             '<div class="quick-list">' +
-              '<button class="quick" data-action="new-record" data-kind="lab"><span class="idx">01</span><div><b>补一条血常规</b><small>最近一次是什么时候？</small></div><span class="arr">→</span></button>' +
-              '<button class="quick" data-action="new-record" data-kind="symptom"><span class="idx">02</span><div><b>记下这周最难受的</b><small>疲劳 / 瘙痒 / 骨痛 / 腹胀</small></div><span class="arr">→</span></button>' +
-              '<button class="quick" data-nav="trials"><span class="idx">03</span><div><b>看一眼研究线索</b><small>只做候选，不是入组资格</small></div><span class="arr">→</span></button>' +
+              '<button class="quick" data-action="new-record" data-kind="symptom"><span class="idx">01</span><div><b>记录一次发作</b><small>起止、体温、疼痛位置与影响</small></div><span class="arr">→</span></button>' +
+              '<button class="quick" data-action="new-record" data-kind="lab"><span class="idx">02</span><div><b>补一条检验结果</b><small>保留单位、参考范围和报告来源</small></div><span class="arr">→</span></button>' +
+              '<button class="quick" data-nav="trials"><span class="idx">03</span><div><b>查看公开研究登记</b><small>来源与日期可回查，不判断入组资格</small></div><span class="arr">→</span></button>' +
             '</div>' +
           '</section>' +
         '</div>' +
@@ -266,7 +266,7 @@
     var kinds = (state.data.recordKinds || DEMO.recordKinds)
     var entries = p.entries || []
     var selectedKind = state.recordKind || 'symptom'
-    return pageHead('RECORD / 02', '把发生过的事记下来', '日期 + 一项内容就能保存。写入本机数据库，刷新后仍在。演示态会明确写“刷新重置”。',
+    return pageHead('RECORD / 02', '把发生过的事记下来', '日期 + 一项内容就能保存。写入本机数据库，刷新后仍在。演示态会明确写“刷新会重置”。',
       '<button class="btn" data-action="profiles">切换档案</button>') +
       '<div class="kind-grid" role="group" aria-label="记录类型">' + kinds.map(function (k) {
         return '<button class="kind" type="button" data-kind-btn="' + k.kind + '" aria-pressed="' + (selectedKind === k.kind) + '"><span class="ic">' + k.icon + '</span>' + k.label + '</button>'
@@ -283,12 +283,12 @@
     var today = state.data.TODAY || new Date().toISOString().slice(0, 10)
     var extra = ''
     if (kind === 'symptom') {
-      extra = '<div class="field full"><label for="f-score">自评分（0–10，只是你的感受）</label><div class="range-row"><input id="f-score" name="score" type="range" min="0" max="10" step="1" value="4" oninput="this.parentNode.querySelector(\'.range-val\').textContent=this.value"><span class="range-val">4</span></div><small>0 = 没有，10 = 最难受。不用于判断病因或严重程度。</small></div>' +
-        '<div class="field full"><label>主要在哪儿</label><div class="chips">' + ['疲劳', '皮肤瘙痒', '骨痛', '腹胀', '早饱', '夜间盗汗', '头晕', '其他'].map(function (x) { return '<label class="chip"><input type="checkbox" name="locations" value="' + x + '" style="margin-right:4px">' + x + '</label>' }).join('') + '</div></div>' +
-        '<div class="field"><label for="f-duration">持续了多久</label><input id="f-duration" name="duration" placeholder="例如：近 2 周 / 间歇"></div>'
+      extra = '<div class="field full"><label for="f-score">自我感受（0–10，仅用于回顾）</label><div class="range-row"><input id="f-score" name="score" type="range" min="0" max="10" step="1" value="4" oninput="this.parentNode.querySelector(\'.range-val\').textContent=this.value"><span class="range-val">4</span></div><small>这是个人感受记录，不表示医学严重程度。</small></div>' +
+        '<div class="field full"><label>观察到的表现（可多选）</label><div class="chips">' + ['发热', '肌肉疼痛', '皮疹/局部发红', '眼部不适', '腹部不适', '胸部不适', '关节疼痛', '其他'].map(function (x) { return '<label class="chip"><input type="checkbox" name="locations" value="' + x + '" style="margin-right:4px">' + x + '</label>' }).join('') + '</div></div>' +
+        '<div class="field"><label for="f-duration">持续时间（原样记录）</label><input id="f-duration" name="duration" placeholder="例如：约 6 天 / 尚未结束"></div>'
     } else if (kind === 'lab') {
       extra = '<div class="field"><label for="f-metric">指标</label><select id="f-metric" name="metricKey">' +
-        [['Hb', '血红蛋白', 'g/L', '血细胞'], ['PLT', '血小板', '×10⁹/L', '血细胞'], ['WBC', '白细胞', '×10⁹/L', '血细胞'], ['LDH', '乳酸脱氢酶', 'U/L', '炎症与代谢'], ['Spleen', '脾脏长径', 'cm', '脾脏与体型'], ['Weight', '体重', 'kg', '脾脏与体型']].map(function (m, i) { return '<option value="' + m[0] + '" data-label="' + m[1] + '" data-unit="' + m[2] + '" data-cat="' + m[3] + '"' + (i === 0 ? ' selected' : '') + '>' + m[1] + '</option>' }).join('') + '</select></div>' +
+        [['CRP', 'C反应蛋白（CRP）', 'mg/L', '炎症指标'], ['ESR', '红细胞沉降率（ESR）', 'mm/h', '炎症指标'], ['SAA', '血清淀粉样蛋白A（SAA）', 'mg/L', '炎症指标'], ['TEMP', '体温', '°C', '发作观察'], ['OTHER', '其他检验项目', '', '其他']].map(function (m, i) { return '<option value="' + m[0] + '" data-label="' + m[1] + '" data-unit="' + m[2] + '" data-cat="' + m[3] + '"' + (i === 0 ? ' selected' : '') + '>' + m[1] + '</option>' }).join('') + '</select></div>' +
         '<div class="field"><label for="f-value">数值</label><input id="f-value" name="value" type="number" step="0.1" inputmode="decimal" placeholder="例如 149"></div>' +
         '<div class="field"><label for="f-unit">单位</label><input id="f-unit" name="unit" value="g/L"></div>' +
         '<div class="field"><label for="f-institution">机构（可选）</label><input id="f-institution" name="institution" placeholder="例如：市一医院检验科"></div>' +
@@ -304,7 +304,7 @@
       extra = '<div class="field"><label for="f-dept2">科室</label><input id="f-dept2" name="department" placeholder="血液科"></div>' +
         '<div class="field"><label for="f-doctor">医生（可选）</label><input id="f-doctor" name="doctor" placeholder="只写称呼即可"></div>'
     } else if (kind === 'report') {
-      extra = '<div class="field"><label for="f-rtype">报告类型</label><select id="f-rtype" name="reportType"><option>血常规</option><option>骨髓</option><option>超声</option><option>分子检测</option><option>其他</option></select></div>'
+      extra = '<div class="field"><label for="f-rtype">报告类型</label><select id="f-rtype" name="reportType"><option>检验报告</option><option>遗传</option><option>超声</option><option>分子检测</option><option>其他</option></select></div>'
     } else if (kind === 'doc') {
       extra = '<div class="field"><label for="f-dtype">文档类型</label><select id="f-dtype" name="docType"><option>门诊记录</option><option>出院小结</option><option>检查报告</option><option>其他</option></select></div>'
     } else if (kind === 'mind') {
@@ -373,15 +373,15 @@
     return '<polyline fill="none" stroke="' + color + '" stroke-width="1.6" points="' + pts.map(function (p) { return p[0] + ',' + p[1] }).join(' ') + '"/>'
   }
   function pageMetrics(p) {
-    return pageHead('METRICS / 03', '每个指标，各看各的', '血红蛋白、血小板、白细胞…… 每一条线只跟自己比。不同指标之间不合成“病情分”。',
+    return pageHead('OBSERVATIONS / 03', '按原始单位回看检验与发作观察', 'CRP、ESR、SAA 等按不同单位和方法分开呈现；不合成病情分，也不作个体判断。',
       '<button class="btn ' + (state.metricsView === 'cards' ? 'primary' : '') + '" data-action="metrics-view" data-view="cards">指标卡</button>' +
       '<button class="btn ' + (state.metricsView === 'chart' ? 'primary' : '') + '" data-action="metrics-view" data-view="chart">一图秀</button>' +
-      '<button class="btn" data-action="new-record" data-kind="lab">＋ 记血常规</button>') +
+      '<button class="btn" data-action="new-record" data-kind="lab">＋ 记一条检验</button>') +
       (state.metricsView === 'chart' ? oneChart(p) : metricCards(p))
   }
   function metricCards(p) {
     var groups = metricGroups(p)
-    if (!groups.length) return '<div class="empty"><b>还没有指标</b>记录一次血常规或脾脏超声后，这里会按类别出现指标卡。</div>'
+    if (!groups.length) return '<div class="empty"><b>还没有指标</b>记录一次检验结果或发作观察后，这里会按类别出现指标卡。</div>'
     return groups.map(function (g) {
       var keys = Object.keys(g.items)
       return '<section class="section"><div class="group-head"><h2>' + esc(g.name) + '</h2><span class="count">' + keys.length + ' 项 · ' + keys.reduce(function (n, k) { return n + g.items[k].length }, 0) + ' 次记录</span></div>' +
@@ -411,7 +411,7 @@
     var groups = metricGroups(p)
     var flat = {}
     groups.forEach(function (g) { Object.keys(g.items).forEach(function (k) { flat[k] = g.items[k] }) })
-    var bases = ['Hb', 'PLT', 'WBC', 'LDH', 'Spleen']
+    var bases = ['CRP', 'ESR', 'SAA', 'TEMP']
     var chosen = Object.keys(flat).filter(function (k) { return bases.indexOf(metricBase(k)) >= 0 }).sort(function (a, b) {
       return bases.indexOf(metricBase(a)) - bases.indexOf(metricBase(b))
     })
@@ -593,7 +593,7 @@
     return poolHead(snap, rows.length) +
       '<form id="trial-search-form" class="trial-controls paper pad" aria-label="检索条件">' +
         '<div class="field"><label for="t-keyword">关键词 / 登记号</label><input id="t-keyword" name="keyword" value="' + esc(f.keyword) + '" placeholder="例如：ruxolitinib、NCT07469891"></div>' +
-        '<div class="field"><label for="t-subtype">病理/亚型</label><select id="t-subtype" name="subtype"><option value="">全部</option><option' + (f.subtype === 'Polycythemia' ? ' selected' : '') + '>Polycythemia</option><option' + (f.subtype === 'Myelofibrosis' ? ' selected' : '') + '>Myelofibrosis</option><option' + (f.subtype === 'Thrombocythemia' ? ' selected' : '') + '>Thrombocythemia</option></select></div>' +
+        '<div class="field"><label for="t-subtype">研究涉及</label><select id="t-subtype" name="subtype"><option value="">全部</option><option' + (f.subtype === 'TRAPS' ? ' selected' : '') + '>TRAPS</option><option' + (f.subtype === 'autoinflammatory disease' ? ' selected' : '') + '>autoinflammatory disease</option><option' + (f.subtype === 'periodic fever' ? ' selected' : '') + '>periodic fever</option></select></div>' +
         '<div class="field"><label for="t-status">状态</label><select id="t-status" name="status"><option value="">全部</option><option' + (f.status === 'Recruiting' ? ' selected' : '') + '>Recruiting</option><option' + (f.status === 'Active' ? ' selected' : '') + '>Active</option></select></div>' +
         '<div class="field"><label for="t-phase">阶段</label><select id="t-phase" name="phase"><option value="">全部</option><option' + (f.phase === 'Phase 1' ? ' selected' : '') + '>Phase 1</option><option' + (f.phase === 'Phase 2' ? ' selected' : '') + '>Phase 2</option></select></div>' +
         '<div class="field"><label for="t-country">地区</label><select id="t-country" name="country"><option value="">全部</option><option' + (f.country === 'China' ? ' selected' : '') + '>China</option><option' + (f.country === 'United States' ? ' selected' : '') + '>United States</option></select></div>' +
@@ -639,9 +639,9 @@
     var snap = state.data.trialSnapshot || {}
     var channels = snap.channels || []
     var tab = state.settingsTab || 'workspace'
-    return pageHead('SETTINGS / 06', '设置与事实边界', '目录、临床数据库、隐私、导出和关于。每一项都写清“接通了没有”。', '') +
+    return pageHead('SETTINGS / 06', '设置与资料来源', '资料目录、数据来源、隐私、导出和关于；未接通的能力会明确标记。', '') +
       '<div class="tabs" role="tablist">' +
-        [['workspace', '工作区'], ['mineru', '文档解析（MinerU）'], ['clinical', '临床数据库']].map(function (t) {
+        [['workspace', '我的资料'], ['mineru', '数据来源'], ['clinical', '公开研究']].map(function (t) {
           return '<button role="tab" data-settings-tab="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + '</button>'
         }).join('') + '</div>' +
       (tab === 'workspace' ? settingsWorkspace(p) : tab === 'mineru' ? settingsMineru() : settingsClinical(snap, channels))
@@ -655,29 +655,26 @@
         privacyList(p) + '</section>' +
       '<section class="paper setting-block"><h2>导出与打印</h2><p>导出的是本机 HTML 文件，不含私密记录。</p><div class="export-list">' +
         '<button class="btn" data-action="export-summary">导出复诊摘要</button><button class="btn" data-action="print-summary">打印</button></div></section>' +
-      '<section class="paper setting-block"><h2>关于</h2><p><b>小髓宝</b>（占位名，待用户追认）· MPN 患者工作台 v0.2.0。</p>' +
+      '<section class="paper setting-block"><h2>关于</h2><p><b>TRAPS 工作台</b>（占位名，待用户追认）· v0.2.0。</p>' +
         '<p class="tiny muted">0 患者访谈 · 0 临床审核 · 所有医学表述待核。合成数据不对应真实患者。真实患者数据不进仓、不进报告。</p>' +
         '<p class="tiny muted">数据连接：' + (state.api ? '本机 sqlite 已连接' : '演示态（未连接 API）') + '</p></section>' +
     '</div>'
   }
   function settingsMineru() {
+    var snap = state.data.trialSnapshot || {}
     return '<div class="settings-grid">' +
-      '<section class="paper setting-block" style="grid-column:1/-1"><h2>文档解析（MinerU）</h2>' +
-        '<p><b>本台未接入 MinerU。</b>勾选与保存都不联网，不会上传任何报告；未勾选前同样不会调用。</p>' +
-        '<label class="chip" style="display:inline-flex;align-items:center;width:max-content;margin:6px 0 12px"><input type="checkbox" disabled style="margin-right:6px"> 我知悉：接入后报告会离开本机（当前不可用）</label>' +
-        '<div class="form-grid"><div class="field"><label for="mineru-token">Token（只显后 4 位）</label><input id="mineru-token" value="••••••••••••未接入" disabled></div>' +
-        '<div class="field"><label for="mineru-model">解析模型</label><input id="mineru-model" value="pipeline（固定，不切 VLM）" disabled></div></div>' +
-        '<p class="tiny muted" style="margin-top:10px">接入后仍只做“抄写不判断”：表格先转竖线表再按位置对齐，数目不一致整行放弃；解析结果永远只是候选，逐项确认才进事实层。</p>' +
-        '<p class="tiny muted">免费额度口径（接入时适用）：单文件 ≤10 MB / ≤20 页，超出走降级解析；Token 只进本机密钥文件，日志只出掩码。</p></section>' +
+      '<section class="paper setting-block"><h2>患者资料</h2><p>档案和记录保存在本机。资料目录切换不会自动移动或删除旧数据。</p><div class="path-box">' + esc((state.data.dataRoot && state.data.dataRoot.dir) || '演示原型：未连接本机数据库') + '</div></section>' +
+      '<section class="paper setting-block"><h2>临床参考与研究快照</h2><p>来源地区、访问日期和查询通道状态见“公开研究”页。登记记录可能过期，不视为完整检索结果。</p><p>最近快照：' + esc(snap.snapshotDate || '未取得') + '</p></section>' +
+      '<section class="paper setting-block"><h2>资料解析</h2><p><b>未接入报告解析。</b>原型不上传文件、不接收密钥，也不将原件发送到任何外部服务。</p><p>未来如接入，解析内容会作为待核候选，须逐项确认后才进入档案。</p></section>' +
     '</div>'
   }
   function settingsClinical(snap, channels) {
     return '<div class="settings-grid">' +
-      '<section class="paper setting-block" style="grid-column:1/-1"><h2>临床数据库</h2><p>逐通道终态原样展示。FAILED / NEEDS_SETUP 不算“查过”，不计覆盖率。</p>' +
+      '<section class="paper setting-block" style="grid-column:1/-1"><h2>公开研究来源</h2><p>逐通道终态原样展示。FAILED / NEEDS_SETUP 不算“查过”，不计覆盖率。</p>' +
         '<div class="table-scroll"><table class="data-table"><thead><tr><th>通道</th><th>终态</th><th>返回</th><th>口径 / 失败原因</th></tr></thead><tbody>' +
         (channels.length ? channels.map(function (c) {
           return '<tr><td>' + esc(c.label || c.id) + '</td><td><span class="state ' + esc(c.state) + '">' + esc(c.state) + '</span></td><td class="mono">' + (c.count == null ? '—' : c.count) + '</td><td>' + esc(c.note || (c.state === 'FAILED' ? '本轮失败，不算查过' : '登记库口径')) + '</td></tr>'
-        }).join('') : '<tr><td colspan="4">演示态没有快照。开发版从 research/mpn-2026 读取。</td></tr>') +
+        }).join('') : '<tr><td colspan="4">开发版从本机 TRAPS 公开研究快照读取。</td></tr>') +
         '</tbody></table></div>' +
         '<p class="tiny muted" style="margin-top:8px">快照日期 ' + esc(snap.snapshotDate || '未标注') + ' · 记录 ' + (snap.recordCount == null ? '—' : snap.recordCount) + ' 条 · 相关 ' + (snap.relevant == null ? '—' : snap.relevant) + ' 条。' + esc(snap.disclaimer || '') + '</p>' +
         '<p class="tiny muted" style="margin-top:6px">数据口径：仅回顾不解读 · 不同方法/机构不合并 · 解读归医生。登记状态未核实；快照会过期。</p></section>' +
@@ -699,13 +696,13 @@
       '<div class="modal-head"><h2 id="pm-title">档案管理</h2><button class="modal-close" data-close-modal="1" aria-label="关闭">✕</button></div>' +
       '<p class="tiny muted" style="margin:0 0 12px">合成示例不可删、不会被你的记录覆盖。新建档案从空记录开始。</p>' +
       '<div class="profile-list">' + (d.profiles || []).map(function (p) {
-        return '<button class="profile-option" data-select-profile="' + esc(p.id) + '" aria-pressed="' + (p.id === state.profileId) + '"><b>' + esc(p.name) + '</b><span>' + esc(p.tag || p.subtype || 'MPN') + ' · ' + (Number(p.is_demo) ? '合成示例' : '我的档案') + '</span><span>' + (p.entries || []).length + ' 条记录 · ' + (p.metrics || []).length + ' 个指标</span></button>'
+        return '<button class="profile-option" data-select-profile="' + esc(p.id) + '" aria-pressed="' + (p.id === state.profileId) + '"><b>' + esc(p.name) + '</b><span>' + esc(p.tag || 'TRAPS 资料') + ' · ' + (Number(p.is_demo) ? '合成示例' : '我的档案') + '</span><span>' + (p.entries || []).length + ' 条记录 · ' + (p.metrics || []).length + ' 个指标</span></button>'
       }).join('') + '</div>' +
       '<form id="profile-form" class="create-box"><h3>＋ 新建档案</h3><p class="tip" style="margin-top:2px">新建我的档案：只有名称必填，创建后立即切换；亚型/确诊年月可以之后再补。</p>' +
         '<div class="form-grid"><div class="field full"><label for="p-name">名称</label><input id="p-name" name="name" maxlength="80" required placeholder="例如：我的档案"></div>' +
-        '<div class="field"><label for="p-subtype">亚型（可选）</label><select id="p-subtype" name="subtype"><option value="">未填</option><option>PV</option><option>ET</option><option>PMF</option><option>MPN-U</option></select></div>' +
+        '<div class="field"><label for="p-subtype">疾病标签（可选）</label><select id="p-subtype" name="subtype"><option value="">未填</option><option>TRAPS（用户自填）</option></select></div>' +
         '<div class="field"><label for="p-date">确诊年月（可选）</label><input id="p-date" name="diagnosed_on" type="date"></div>' +
-        '<div class="field full"><label for="p-tag">一句话标签（可选）</label><input id="p-tag" name="tag" maxlength="80" placeholder="例如：随访中 / 刚确诊"></div></div>' +
+        '<div class="field full"><label for="p-tag">一句话标签（可选）</label><input id="p-tag" name="tag" maxlength="80" placeholder="例如：刚完成评估 / 长期随访"></div></div>' +
         '<div class="form-foot"><span class="hint">' + (state.api ? '创建后写入 sqlite（is_demo=0），并立即切换。' : '演示态：只在本页内存，刷新重置。') + '</span><button class="btn primary" type="submit">创建并切换</button></div>' +
       '</form></div></div>'
     var first = $('#p-name')
@@ -752,7 +749,7 @@
       }
       return
     }
-    window.parent.postMessage({ type: 'mpn:pick-dir' }, location.origin)
+    window.parent.postMessage({ type: 'traps:pick-dir' }, location.origin)
     toast('已请求宿主打开目录选择器。')
   }
   function openRecord(kind) {
@@ -771,7 +768,7 @@
       var sel = $('#f-metric', form)
       var opt = sel && sel.options[sel.selectedIndex]
       var value = fd.get('value')
-      data.metric = { key: sel ? sel.value : 'Hb', label: opt ? opt.getAttribute('data-label') : '血红蛋白', category: opt ? opt.getAttribute('data-cat') : '血细胞', value: value, unit: fd.get('unit'), ref_low: fd.get('refLow') || null, ref_high: fd.get('refHigh') || null, method: '静脉血', institution: fd.get('institution') || '' }
+      data.metric = { key: sel ? sel.value : 'CRP', label: opt ? opt.getAttribute('data-label') : 'C反应蛋白', category: opt ? opt.getAttribute('data-cat') : '炎症指标', value: value, unit: fd.get('unit'), ref_low: fd.get('refLow') || null, ref_high: fd.get('refHigh') || null, method: '按报告填写', institution: fd.get('institution') || '' }
       if (!data.title) data.title = (opt ? opt.getAttribute('data-label') : '指标') + ' ' + (value || '')
     }
     if (kind === 'treatment') { data.drug = fd.get('drug'); data.status = fd.get('treatmentStatus') }
@@ -853,9 +850,9 @@
       '<h2>最近指标</h2><table><tr><th>日期</th><th>指标</th><th>值</th><th>参考</th><th>来源</th></tr>' + metrics.map(function (m) { return '<tr><td>' + fmtDate(m.date) + '</td><td>' + esc(m.label) + '</td><td>' + fmtNum(m.value) + ' ' + esc(m.unit || '') + '</td><td>' + (m.ref_low == null && m.ref_high == null ? '—' : fmtNum(m.ref_low) + '–' + fmtNum(m.ref_high)) + '</td><td>' + esc(m.source || '') + '</td></tr>' }).join('') + '</table>' +
       '<h2>最近记录</h2>' + entries.map(function (e) { return '<p><b>' + fmtDate(e.date) + ' · ' + esc(e.title) + '</b><br>' + esc(e.body || '') + '</p>' }).join('') +
       '<h2>想问医生</h2>' + (p.entries || []).filter(function (e) { return e.kind === 'question' }).map(function (q) { return '<p>· ' + esc(q.title) + '<br><small>' + esc(q.body || '') + '</small></p>' }).join('') +
-      '<p><small>私密记录已排除。本页由小髓宝 MPN 工作台在本机生成。</small></p>'
+      '<p><small>私密记录已排除。本页由 TRAPS 工作台在本机生成。</small></p>'
     var blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'MPN-复诊摘要-' + state.data.TODAY + '.html'; a.click()
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'TRAPS-复诊摘要-' + state.data.TODAY + '.html'; a.click()
     setTimeout(function () { URL.revokeObjectURL(a.href) }, 2000)
     toast('已生成摘要文件（私密记录未包含）')
   }
@@ -863,7 +860,7 @@
     var p = profile()
     var prompt = '请只根据我档案里已记录的内容，帮我整理临床研究页的候选线索：列出每条试验的登记号、我记录里对得上的字段、对不上或待确认的字段，并列出 3 个我下次问医生的问题。不要判断我是否符合入组条件，不要建议我参加或放弃。档案：' + p.name + '；亚型：' + (p.subtype || '未填') + '。'
     if (!isHost) { toast('AI 对话由 DSH 宿主提供；独立打开时不可用。'); return }
-    window.parent.postMessage({ type: 'mpn:agent-draft', prompt: prompt }, location.origin)
+    window.parent.postMessage({ type: 'traps:agent-draft', prompt: prompt }, location.origin)
     toast('已把整理请求填入 AI 草稿；请确认后自行发送。')
   }
 
@@ -874,7 +871,7 @@
     var closeModalEl = e.target.closest('[data-close-modal]')
     if (closeModalEl && (e.target === closeModalEl || closeModalEl.classList.contains('modal-close'))) { closeModal(); return }
     var sel = e.target.closest('[data-select-profile]')
-    if (sel) { state.profileId = sel.getAttribute('data-select-profile'); try { localStorage.setItem('mpn.profileId', state.profileId) } catch (_) {} closeModal(); paint(); toast('已切换档案'); return }
+    if (sel) { state.profileId = sel.getAttribute('data-select-profile'); try { localStorage.setItem('traps.profileId', state.profileId) } catch (_) {} closeModal(); paint(); toast('已切换档案'); return }
     var closeDrawerEl = e.target.closest('[data-close-drawer]')
     if (closeDrawerEl && (e.target === closeDrawerEl || closeDrawerEl.classList.contains('close'))) { closeDrawer(); return }
     var action = e.target.closest('[data-action]')
@@ -915,12 +912,12 @@
       if (state.api) {
         post('/subjects', body).then(function (res) {
           state.profileId = res.profileKey
-          try { localStorage.setItem('mpn.profileId', state.profileId) } catch (_) {}
+          try { localStorage.setItem('traps.profileId', state.profileId) } catch (_) {}
           applyBootstrap(res.bootstrap); closeModal(); toast('已创建并切换；is_demo=0，已写入本机')
         }).catch(function (err) { toast('创建失败：' + err.message, 'error') })
       } else {
-        var p = { id: 'local-p' + Date.now(), profile_key: 'local-p', name: body.name, tag: body.tag || '我的档案', subtype: body.subtype || '', diagnosed_on: body.diagnosed_on || '', summary: '还没有记录。从一条血常规或症状开始。', is_demo: 0, facts: body.subtype ? [{ field: 'subtype', label: '亚型', value: body.subtype, source: '用户自填', confirmed: 1 }] : [], metrics: [], entries: [], treatments: [], saved_trials: [], privateEntries: [] }
-        state.data.profiles.push(p); state.profileId = p.id; try { localStorage.setItem('mpn.profileId', p.id) } catch (_) {} closeModal(); paint(); toast('演示态：新档案只在本页内存，刷新会重置')
+        var p = { id: 'local-p' + Date.now(), profile_key: 'local-p', name: body.name, tag: body.tag || '我的档案', subtype: body.subtype || '', diagnosed_on: body.diagnosed_on || '', summary: '还没有记录。从一条检验报告或症状开始。', is_demo: 0, facts: body.subtype ? [{ field: 'subtype', label: '亚型', value: body.subtype, source: '用户自填', confirmed: 1 }] : [], metrics: [], entries: [], treatments: [], saved_trials: [], privateEntries: [] }
+        state.data.profiles.push(p); state.profileId = p.id; try { localStorage.setItem('traps.profileId', p.id) } catch (_) {} closeModal(); paint(); toast('演示态：新档案只在本页内存，刷新会重置')
       }
       return
     }
@@ -945,7 +942,7 @@
   document.addEventListener('click', function (e) {
     if (e.target.id === 'dir-btn') { chooseDir(); return }
     if (e.target.id === 'ai-btn') {
-      if (isHost) window.parent.postMessage({ type: 'mpn:agent-open' }, location.origin)
+      if (isHost) window.parent.postMessage({ type: 'traps:agent-open' }, location.origin)
       else toast('AI 对话由 DSH 宿主提供；独立打开时不可用。')
     }
   })
@@ -953,9 +950,9 @@
     if (e.origin !== location.origin) return
     var d = e.data
     if (!d || typeof d !== 'object') return
-    if (d.type === 'mpn:root-changed') { if (d.dir) toast('资料目录已切换：' + d.dir); refresh() }
-    if (d.type === 'mpn:primer-open') { var trigger = document.querySelector('[data-primer-open][data-primer-entry="status"]'); if (trigger) trigger.click() }
-    if (d.type === 'mpn:focus') { /* 宿主切回业务区 */ }
+    if (d.type === 'traps:root-changed') { if (d.dir) toast('资料目录已切换：' + d.dir); refresh() }
+    if (d.type === 'traps:primer-open') { var trigger = document.querySelector('[data-primer-open][data-primer-entry="status"]'); if (trigger) trigger.click() }
+    if (d.type === 'traps:focus') { /* 宿主切回业务区 */ }
   })
   function refresh() {
     if (!state.api) return
@@ -963,7 +960,7 @@
   }
 
   /* 把应用暴露给探针：只读 + 导航，不用于隐藏逻辑 */
-  window.MPNApp = {
+  window.TRAPSApp = {
     state: state,
     nav: navigate,
     refresh: refresh,
