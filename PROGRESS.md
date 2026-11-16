@@ -4,7 +4,7 @@
 
 ## 当前里程碑
 
-M0–M4 已完成并推送；M5–M9 进行中。
+M0–M5 已完成并推送；M6–M9 进行中。
 
 ## 已完成
 
@@ -18,9 +18,11 @@ M0–M4 已完成并推送；M5–M9 进行中。
 
 - M4：以 ClinicalTrials.gov API v2 公开登记构建 3 条 TRAPS 种子快照（非穷尽），JSONL/SQLite 一致性、manifest 哈希、来源日期核对通过；清除了随模板带入的 MPN 试验快照。SQLite 因通用忽略规则漏入首个提交，已补入版本控制。无患者级数据。
 
+- M5：重命名本地存储/HTTP API 为 TRAPS；服务层增加事务性发作+观察写入与统一 bootstrap 读模型，隐私条目排除；面板 newSession/subscribe 已在生成客户端具备，契约和限制写入 API-CONTRACT。运行时脚本静态语法检查通过。DSH 宿主完整 CRUD 服务未接线，明确为未验证/待完善。
+
 ## 下一步
 
-1. M5：仅用公开研究快照/合成患者资料接通 API、SQLite 与宿主会话契约。
+1. M6：仅用公开研究快照/合成患者资料接通 API、SQLite 与宿主会话契约。
 3. M6–M9：pack/profile 可执行项、草稿、全量自检与报告；Desktop 实机不在 sam 验证。
 
 ## 阻塞与未验证

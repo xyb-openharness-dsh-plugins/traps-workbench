@@ -1,4 +1,4 @@
-/* MPN 数据层：本地 sqlite、两套合成档案、用户档案、8 类记录、试验快照与收藏。
+/* TRAPS 数据层：本地 sqlite、合成档案、用户档案、发作/观察、指标与公开试验快照。
    约束：不生成个体判断/风险分级/入组资格；pct 只在展示层计算；所有个人记录带 is_private。 */
 import { DatabaseSync } from 'node:sqlite'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, renameSync } from 'node:fs'
@@ -48,7 +48,7 @@ function text(value, max = 2000) {
 
 export class Workbench {
   constructor({ root } = {}) {
-    this.defaultRoot = resolve(root || process.env.MPN_DATA_ROOT || join(homedir(), '.mpn-workbench'))
+    this.defaultRoot = resolve(root || process.env.TRAPS_DATA_ROOT || join(homedir(), '.traps-workbench'))
     this.pointer = join(this.defaultRoot, '.data-root.json')
     this.db = null
     this.root = this.resolveStartRoot()
@@ -65,7 +65,7 @@ export class Workbench {
 
   open() {
     mkdirSync(this.root, { recursive: true })
-    this.dbPath = join(this.root, 'mpn.sqlite')
+    this.dbPath = join(this.root, 'traps.sqlite')
     this.db = new DatabaseSync(this.dbPath)
     this.db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;')
     if (Number(this.db.prepare('PRAGMA user_version').get()?.user_version || 0) < 1) this.db.exec(SCHEMA)
@@ -89,10 +89,10 @@ export class Workbench {
 
   seedIfNeeded() {
     const seeded = this.getSetting('seed_version')
-    if (seeded === 'mpn-demo-v1') return
+    if (seeded === 'traps-demo-v1') return
     const count = Number(this.db.prepare('SELECT COUNT(*) AS n FROM profiles').get()?.n || 0)
     if (count === 0) this.seedDemo()
-    this.setSetting('seed_version', 'mpn-demo-v1')
+    this.setSetting('seed_version', 'traps-demo-v1')
   }
 
   seedDemo() {
@@ -116,7 +116,7 @@ export class Workbench {
   }
 
   syncTrialSnapshot() {
-    const dir = join(HERE, '..', 'research', 'mpn-2026')
+    const dir = join(HERE, '..', 'research', 'traps-2026')
     const manifestPath = join(dir, 'manifest.json')
     if (!existsSync(manifestPath)) return
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
@@ -180,6 +180,7 @@ export class Workbench {
       .map((e) => ({ id: idOf('entry', e.id), kind: e.kind, title: e.title, body: e.body, data: parse(e.data_json, {}), date: e.event_date, source: e.source, is_private: Number(e.is_private) }))
     const treatments = this.db.prepare('SELECT * FROM treatments WHERE profile_key=? AND in_use=1 AND is_private=0 ORDER BY started_on DESC, id DESC').all(profileKey)
       .map((t) => ({ id: idOf('treatment', t.id), name: t.name, status: t.status, started_on: t.started_on, ended_on: t.ended_on, note: t.note, source: t.source }))
+    const flares = this.db.prepare('SELECT * FROM flare_events WHERE profile_key=? AND in_use=1 AND is_private=0 ORDER BY started_on DESC,id DESC').all(profileKey).map((f) => ({ id: `f${f.id}`, started_on: f.started_on, ended_on: f.ended_on, start_time: f.start_time, end_time: f.end_time, title: f.title, note: f.note, source: f.source, observations: this.db.prepare('SELECT * FROM flare_observations WHERE flare_id=? AND in_use=1 AND is_private=0 ORDER BY observed_on,id').all(f.id).map((o) => ({ id: `o${o.id}`, observed_on: o.observed_on, feature: o.feature, body_site: o.body_site, value_text: o.value_text, patient_rated_impact: o.patient_rated_impact, source: o.source })) }))
     const privateEntries = this.db.prepare('SELECT id, kind, title, event_date AS date FROM entries WHERE profile_key=? AND in_use=1 AND is_private=1 ORDER BY event_date DESC, id DESC').all(profileKey)
       .map((e) => ({ ...e, id: idOf('entry', e.id) }))
     const saved = this.db.prepare('SELECT * FROM saved_trial WHERE profile_key=? ORDER BY saved_on DESC, id DESC').all(profileKey)
@@ -188,7 +189,7 @@ export class Workbench {
       id: p.profile_key, profile_key: p.profile_key, name: p.name, tag: p.tag, subtype: p.subtype,
       diagnosed_on: p.diagnosed_on, summary: p.summary, is_demo: Number(p.is_demo),
       age: Number(facts.find((f) => f.field === 'age')?.value || 0) || null,
-      facts, metrics, entries, treatments, saved_trials: saved, privateEntries,
+      facts, metrics, entries, treatments, flares, saved_trials: saved, privateEntries,
     }
   }
 
@@ -268,6 +269,31 @@ export class Workbench {
       this.db.exec('COMMIT')
     } catch (error) { this.db.exec('ROLLBACK'); throw error }
     return { ok: true, id: idOf('entry', entryId), entryId }
+  }
+
+  addFlare(profileKey, data) {
+    if (!this.getProfile(profileKey)) throw Object.assign(new Error('档案不存在'), { status: 404 })
+    const d = data && typeof data === 'object' ? data : {}
+    const started = text(d.started_on, 20)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(started)) throw Object.assign(new Error('发作开始日期必填'), { status: 400 })
+    const ended = text(d.ended_on, 20) || null
+    if (ended && (ended < started || !/^\d{4}-\d{2}-\d{2}$/.test(ended))) throw Object.assign(new Error('结束日期不能早于开始日期'), { status: 400 })
+    const now = new Date().toISOString()
+    const observations = Array.isArray(d.observations) ? d.observations.slice(0, 30) : []
+    this.db.exec('BEGIN')
+    try {
+      const result = this.db.prepare('INSERT INTO flare_events(profile_key,started_on,ended_on,start_time,end_time,title,note,source,is_private,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)').run(profileKey,started,ended,text(d.start_time,10)||null,text(d.end_time,10)||null,text(d.title,160)||null,text(d.note,2000)||null,text(d.source,200)||'患者自记',d.private?1:0,now)
+      const id = Number(result.lastInsertRowid)
+      const insert = this.db.prepare('INSERT INTO flare_observations(flare_id,observed_on,feature,body_site,value_text,patient_rated_impact,source,is_private,created_at) VALUES(?,?,?,?,?,?,?,?,?)')
+      const allowed = new Set(['fever','myalgia','rash','eye','abdominal','chest','joint','fatigue','other'])
+      for (const o of observations) {
+        if (!allowed.has(o.feature) || !/^\d{4}-\d{2}-\d{2}/.test(String(o.observed_on||''))) continue
+        const impact = o.patient_rated_impact == null ? null : Number(o.patient_rated_impact)
+        if (impact !== null && (!Number.isInteger(impact) || impact < 0 || impact > 10)) continue
+        insert.run(id,String(o.observed_on).slice(0,25),o.feature,text(o.body_site,80)||null,text(o.value_text,300)||null,impact,text(o.source,200)||text(d.source,200)||'患者自记',d.private?1:0,now)
+      }
+      this.db.exec('COMMIT'); return {ok:true,id:`f${id}`}
+    } catch (error) { this.db.exec('ROLLBACK'); throw error }
   }
 
   setPrivacy(profileKey, kind, id, isPrivate) {

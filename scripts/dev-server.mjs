@@ -9,7 +9,7 @@ import { Workbench, forbiddenRoot } from '../dsh/workbench.js'
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
 const PORT = Number(process.env.PORT || 4173)
-const DATA_ROOT = process.env.MPN_DATA_ROOT || join(ROOT, '.dev-data')
+const DATA_ROOT = process.env.TRAPS_DATA_ROOT || join(ROOT, '.dev-data')
 mkdirSync(DATA_ROOT, { recursive: true })
 const w = new Workbench({ root: DATA_ROOT })
 const manifest = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
@@ -40,22 +40,23 @@ function body(req) {
 const server = http.createServer(async (req, res) => {
   try {
     const u = new URL(req.url, 'http://localhost')
-    if (u.pathname === '/api/mpn/health') return json(res, 200, { ok: true, version: manifest.version, capabilities: ['health', 'bootstrap', 'write', 'trials', 'root', 'ui'], dataRoot: w.currentRootInfo().dir })
-    if (u.pathname === '/api/mpn/bootstrap' && req.method === 'GET') return json(res, 200, w.bootstrap())
-    if (u.pathname === '/api/mpn/root' && req.method === 'GET') return json(res, 200, { ok: true, ...w.currentRootInfo() })
-    if (u.pathname === '/api/mpn/root' && req.method === 'POST') { const b = await body(req); const reason = forbiddenRoot(b.dir); if (reason) return json(res, 400, { error: reason }); return json(res, 200, { ok: true, ...w.setRoot(b.dir) }) }
-    if (u.pathname === '/api/mpn/subjects' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.createProfile(b), bootstrap: w.bootstrap() }) }
-    if (u.pathname === '/api/mpn/entries' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.addEntry(b.profileKey, b.kind, b.data), bootstrap: w.bootstrap() }) }
-    if (u.pathname === '/api/mpn/privacy' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.setPrivacy(b.profileKey, b.kind, b.id, !!b.private), bootstrap: w.bootstrap() }) }
-    if (u.pathname === '/api/mpn/saved-trials' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.saveTrial(b.profileKey, b.trialKey, b.state), bootstrap: w.bootstrap() }) }
-    if (u.pathname === '/api/mpn/trials' && req.method === 'GET') return json(res, 200, w.trialMatch(u.searchParams.get('keyword') || ''))
-    if (u.pathname === '/api/mpn/ui' || u.pathname === '/api/mpn/ui/' || u.pathname === '/api/mpn/ui/index.html') return file(res, publicDir, 'index.html')
-    if (u.pathname.startsWith('/api/mpn/ui/')) return file(res, publicDir, u.pathname.slice('/api/mpn/ui/'.length))
+    if (u.pathname === '/api/traps-workbench/health') return json(res, 200, { ok: true, version: manifest.version, capabilities: ['health', 'bootstrap', 'write', 'trials', 'root', 'ui'], dataRoot: w.currentRootInfo().dir })
+    if (u.pathname === '/api/traps-workbench/bootstrap' && req.method === 'GET') return json(res, 200, w.bootstrap())
+    if (u.pathname === '/api/traps-workbench/root' && req.method === 'GET') return json(res, 200, { ok: true, ...w.currentRootInfo() })
+    if (u.pathname === '/api/traps-workbench/root' && req.method === 'POST') { const b = await body(req); const reason = forbiddenRoot(b.dir); if (reason) return json(res, 400, { error: reason }); return json(res, 200, { ok: true, ...w.setRoot(b.dir) }) }
+    if (u.pathname === '/api/traps-workbench/subjects' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.createProfile(b), bootstrap: w.bootstrap() }) }
+    if (u.pathname === '/api/traps-workbench/entries' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.addEntry(b.profileKey, b.kind, b.data), bootstrap: w.bootstrap() }) }
+    if (u.pathname === '/api/traps-workbench/flares' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.addFlare(b.profileKey, b.data), bootstrap: w.bootstrap() }) }
+    if (u.pathname === '/api/traps-workbench/privacy' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.setPrivacy(b.profileKey, b.kind, b.id, !!b.private), bootstrap: w.bootstrap() }) }
+    if (u.pathname === '/api/traps-workbench/saved-trials' && req.method === 'POST') { const b = await body(req); return json(res, 200, { ...w.saveTrial(b.profileKey, b.trialKey, b.state), bootstrap: w.bootstrap() }) }
+    if (u.pathname === '/api/traps-workbench/trials' && req.method === 'GET') return json(res, 200, w.trialMatch(u.searchParams.get('keyword') || ''))
+    if (u.pathname === '/api/traps-workbench/ui' || u.pathname === '/api/traps-workbench/ui/' || u.pathname === '/api/traps-workbench/ui/index.html') return file(res, publicDir, 'index.html')
+    if (u.pathname.startsWith('/api/traps-workbench/ui/')) return file(res, publicDir, u.pathname.slice('/api/traps-workbench/ui/'.length))
     if (u.pathname.startsWith('/prototypes/v0.2/')) return file(res, protoDir, u.pathname.slice('/prototypes/v0.2/'.length))
     if (u.pathname === '/prototypes/v0.2' || u.pathname === '/prototypes/v0.2/') return file(res, protoDir, 'index.html')
     send(res, 404, 'Not found')
   } catch (error) { json(res, error.status || 500, { error: error.message || String(error) }) }
 })
-server.listen(PORT, '127.0.0.1', () => console.log(`MPN dev server http://127.0.0.1:${PORT}/api/mpn/ui/ (data ${DATA_ROOT})`))
+server.listen(PORT, '127.0.0.1', () => console.log(`TRAPS dev server http://127.0.0.1:${PORT}/api/traps-workbench/ui/ (data ${DATA_ROOT})`))
 process.on('SIGTERM', () => { w.close(); server.close(() => process.exit(0)) })
 process.on('SIGINT', () => { w.close(); server.close(() => process.exit(0)) })

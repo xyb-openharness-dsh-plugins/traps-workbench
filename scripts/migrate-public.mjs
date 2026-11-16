@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* public/ 定点移植：业务原型逐字节复制，不做“两套维护”。
-   原型的 file:// 演示与开发版共用同一份 app.js；开发版通过 /api/mpn 判断数据源。
+   原型的 file:// 演示与开发版共用同一份 app.js；开发版通过 /api/traps-workbench 判断数据源。
    用法：node scripts/migrate-public.mjs [--check] */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
