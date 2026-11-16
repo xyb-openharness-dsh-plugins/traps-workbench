@@ -46,7 +46,7 @@ const FORBIDDEN = ['diagnosis', 'risk_level', 'activity_score', 'progression_sta
 /* 个人记录表：装着逐条患者内容的表。
    不包含身份/元信息表（profile / profiles / subject / workspace / import_batch）：
    它们的私密表达在它们所拥有的记录上，本身加一个标记不属于看板/导出/AI 三个出口。 */
-const PERSONAL = /^(metric_point|consultation|care_event|adverse_event|viewpoint|question|task|document|observation|symptom|lab_|saved_|note|mm_|import_candidate|import_field_map)/
+const PERSONAL = /^(entries|metrics|treatments|saved_trial|flare_events|flare_observations|import_items|import_conflicts)$/
 const fails = []
 const oks = []
 
