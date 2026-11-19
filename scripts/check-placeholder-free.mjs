@@ -22,7 +22,8 @@ const SELF_TEST = process.argv.includes('--self-test')
 
 const PATTERNS = [
   [/\{\{\s*[a-zA-Z_][a-zA-Z0-9_.-]*\s*\}\}/g, '双花括号占位符 {{name}}'],
-  [/__[A-Z][A-Z0-9_]{2,}__/g, '双下划线占位符 __NAME__'],
+  /* 双下划线占位符 __NAME__；白名单 = 服务端注入器的约定 token（docs/06 + check-version-literal 约定 A 要求页面必须含它们） */
+  [/__[A-Z][A-Z0-9_]{2,}__/g, '双下划线占位符 __NAME__', ['__VERSION_DISPLAY__', '__BUILD_DATE__', '__API_BASE__']],
   [/<slug>/g, '初始化占位符 <slug>'],
   [/<\s*项目名\s*>/g, '初始化占位符 <项目名>'],
   [/TODO\s*[:：]\s*(项目|病种|替换|填)/g, '未落地的 TODO'],
@@ -66,8 +67,13 @@ const hits = []
 for (const file of files) {
   let body
   try { body = readFileSync(file, 'utf8') } catch { continue }
-  for (const [re, label] of PATTERNS) {
-    const m = body.match(re)
+  for (const [re, label, allow] of PATTERNS) {
+    let m = body.match(re)
+    if (m && allow) {
+      /* 白名单 token 是服务端注入器的约定形态：只有当「非白名单」命中仍存在时才算未替换 */
+      const rest = (body.match(new RegExp(re.source, 'g')) || []).filter((t) => !allow.includes(t))
+      m = rest.length ? [rest[0]] : null
+    }
     if (m) hits.push(`${file.replace(ROOT + '/', '')}: ${label} → ${m[0].slice(0, 40)}`)
   }
 }

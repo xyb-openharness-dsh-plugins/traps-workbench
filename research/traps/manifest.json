@@ -1,0 +1,95 @@
+{
+  "topic": "traps",
+  "relevantCount": 78,
+  "relevantRule": "标题命中 TRAPS / TNFRSF1A / TNF receptor / periodic fever / 周期性发热 任意一词记相关；只按标题，不做全文判读",
+  "disease": "肿瘤坏死因子受体相关周期性综合征（TRAPS，罕见病 R2 · TNFRSF1A）",
+  "year": "2026",
+  "snapshotDate": "2026-11-20",
+  "tool": "unified-trial-mcp @ /Users/qinxiaoqiang/Downloads/unified_search_trials/dist/src/cli/main.js",
+  "queries": [
+    {
+      "keyword": "TRAPS",
+      "note": "英文缩写（登记库最常用写法）"
+    },
+    {
+      "keyword": "TNF receptor-associated periodic syndrome",
+      "note": "英文标准名"
+    },
+    {
+      "keyword": "TNFRSF1A",
+      "note": "致病基因名"
+    },
+    {
+      "keyword": "肿瘤坏死因子受体相关周期性综合征",
+      "note": "中文标准名"
+    },
+    {
+      "keyword": "periodic fever syndrome TRAPS",
+      "note": "周期热语境"
+    }
+  ],
+  "perSourceLimit": 200,
+  "recordCount": 138,
+  "dbCount": 138,
+  "sourceStatusRows": 30,
+  "sourceStates": [
+    {
+      "source_id": "chictr_online",
+      "state": "failed",
+      "queried": 0
+    },
+    {
+      "source_id": "chictr_pancreatic_archive",
+      "state": "unconfigured",
+      "queried": 0
+    },
+    {
+      "source_id": "chinadrugtrials",
+      "state": "ready",
+      "queried": 1
+    },
+    {
+      "source_id": "ctv",
+      "state": "ready",
+      "queried": 1
+    },
+    {
+      "source_id": "ictrp",
+      "state": "truncated",
+      "queried": 1
+    },
+    {
+      "source_id": "xyb_chinadrugtrials_archive",
+      "state": "ready",
+      "queried": 1
+    }
+  ],
+  "queriedSources": [
+    "chinadrugtrials",
+    "ctv",
+    "ictrp",
+    "xyb_chinadrugtrials_archive"
+  ],
+  "unqueriedSources": [
+    "chictr_online",
+    "chictr_pancreatic_archive"
+  ],
+  "truncatedSources": [
+    "ictrp"
+  ],
+  "honesty": {
+    "queriedMeaning": "只有 SUCCESS 与 NO_RESULTS 表示该来源真的被查询并给出答案；其余终态一律不代表\"没有试验\"",
+    "offlineCorpora": "ChiCTR 离线语料与 XYB 归档仅覆盖胰腺癌；TRAPS 不适用，落 unconfigured 而不是 0 条",
+    "statusWording": "登记 ≠ 有效 ≠ 安全 ≠ 可入组；状态一律「登记状态，未核实」",
+    "mergeRule": "仅同一登记号合并，其余来源并排保留；标题/机构/日期相似不作为合并依据",
+    "coverageNote": "0 条结果必须带该来源自己的覆盖声明（见 source_statuses.coverage）"
+  },
+  "files": {
+    "trials-2026.jsonl": {
+      "sha256": "fe4ff0827cf34a4d1f85c16292e31c1f107518b005ed9da811277ff428a8fa8d"
+    },
+    "traps_trials_2026.sqlite": {
+      "sha256": "7b2ad37780f6bb92b4fa1dfd48e0867de000329f1e854cb0f2b874f939d35461"
+    }
+  }
+}
