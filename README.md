@@ -26,6 +26,17 @@ TRAPS（肿瘤坏死因子受体相关周期性综合征，旧称「家族性 Hi
 
 探针：`node scripts/probe-disease-primer.mjs --url http://127.0.0.1:<端口>/prototypes/v0.2/index.html`（裸跑默认打 starter 参考页、失败关闭；只验参考实现才加 `--allow-examples`）。
 
+
+## 看图（实渲截图，1280×860，prototypes/v0.2）
+
+| 图 | 内容 |
+| --- | --- |
+| ![看板](docs/img/01-dashboard.png) | 看板 hero 与状态卡（含「疾病概要」状态卡入口） |
+| ![疾病概要整页](docs/img/02-primer-open.png) | 「?」打开的整页面板：定义→资料规范→治疗全景→发展趋势，四段带来源 |
+| ![临床研究](docs/img/03-trials.png) | 临床研究三步 Tab（基础档案 / 匹配检查 / 结果分析） |
+| ![折叠卡收起](docs/img/04-fold-closed.png) | 治疗线折叠卡 · 收起态 |
+| ![折叠卡展开](docs/img/05-fold-open.png) | 治疗线折叠卡 · 展开态 |
+
 ## 开发顺序
 
 先共创SPEC和候选数据关系，再交付HTML交互工作台；由用户确认对应版本/模块后，复核SCHEMA/API并实现生产功能。确认记录见docs/PROTOTYPE-REVIEW.md；模型不依赖前端Tab/流程。模板骨架不是业务已确认。
