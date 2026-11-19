@@ -15,3 +15,14 @@
 - 发作持续天数阈值（如「>5 天」）为文献描述【待核】，工作台不做自动诊断或分型判定、不落判读列。
 - 中国适应证只认中国官方来源（NMPA），canakinumab 国内适应证状态未取得原件前一律【待核】。
 - 化验指标口径：只列医生原文与日期；CRP/SAA 不同方法/机构不合并、不跨方法做差。
+
+
+## 2026-11-20 医学事实台账（研究子代理产出，逐条带 URL，2026-11-20 HEAD 核验见 primer-data.js note）
+- 定义/遗传：TNFRSF1A 杂合、常显（外显率不完全）、OMIM #142680（omim.org/entry/142680）；患病率二手估计 ~1/100 万（medlineplus.gov/genetics/condition/tumor-necrosis-factor-receptor-associated-periodic-syndrome）。
+- 发作特征：7–21 天（GeneReviews NBK586171，原件 200）；游走性肌痛+移动性红斑、眶周水肿、结膜炎、腹痛、关节痛。
+- 分类标准：Eurofever/PRINTO 2019（Gattorno, Ann Rheum Dis 2019;78(8):1025-35，PMID 31018962 题录；出版社直链 403 未取得——只能记题录）。
+- 并发症监测：AA 淀粉样变（肾最常受累，蛋白尿可为首发）（PMC9307948）；SAA 持续升高为主要驱动（二手，EULAR 2016 语境）。
+- 治疗类别与证据分层：NSAIDs/激素（综述共识层面，PMC7246474）；依那西普（队列/病例系列，PMC7722275）；卡那单抗（RCT+FDA 2016-09-23 批准，诺华官方新闻稿 200）；托珠单抗（个案）；HSCT（个案/综述，无指南级推荐）。
+- 中国官方：未查到 TRAPS 专门指南；卡那单抗截至 2025 年中未见 NMPA 获批（二手报道，NMPA 数据库未直接核到——标「待核」）；托珠单抗/依那西普中国适应证均不含 TRAPS（二手）。
+- 患者教育：PRINTO 中文版 TRAPS 家长手册（printo.it/pediatric-rheumatology/CN/info/25，200）；中国本土患者组织未查到。
+- 红线执行：以上全部只进「解释层」；阈值/求助短语 0 条未经临床审核，S03 页保持待核占位。

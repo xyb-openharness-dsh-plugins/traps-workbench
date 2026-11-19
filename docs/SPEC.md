@@ -25,3 +25,8 @@
 实体：subjects（is_demo）、profile_facts、records（八 kind：bleed→fever 发作、lab、treatment、question、hospital、report、doc、mind）、metrics（CRP/SAA/血沉等）、导入三表。schema/0001_initial.sql 于 M3 冻结（sha256），无 diagnosis/risk_level 判定列。API：GET bootstrap / POST subjects / POST records / POST privacy / GET trials，契约见 API-CONTRACT。
 
 外部信息合同：疾病概要四段来源分级（原件/题录/二次/未取得分开标）；试验快照标 snapshotDate 且会过期；未核实不冒充确定结论。
+
+
+## v0.2 页面集（2026-11-20 实现口径，与 prototypes/v0.2 逐字对齐）
+一级页 9：看板 / 发作与病程（病程与诊断过程·发作记录·症状记录·发作回顾·诱因与先兆） / 发作表现（发热与热型·眼与眶周水肿·皮肤与游走性红斑·肌痛与关节痛·腹痛与消化） / 病情整理（资料库·整理草稿·病情档案·指标检测·病情汇总） / 病情一图秀（指标趋势·治疗与事件节点） / 治疗与用药（当前用药·变更与更正·副作用与感受·用药前检查记录） / 复诊与准备（问题清单·就诊准备与导出·什么情况要马上就医·医嘱记录） / 长期与生活（心理与家庭·长期监测与淀粉样变筛查·工作·费用·异地就医） / 临床研究（基础档案·匹配检查·结果分析）。
+固定口径：发作日期三态精度（日/月/未知，未知不排序不补齐）；指标可比组按 单位/方法/机构 拆分；文本定性值（尿蛋白 ±/-）只画点；治疗全景只写类别（非肿瘤固定出口=按受累器官与病情轻重排列，已在 primer-data.js 登记）；私密三出口默认排除（摘要/导出/AI 草稿）。

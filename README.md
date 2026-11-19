@@ -4,6 +4,10 @@
 
 这是接入骨架，尚未实现真实业务。初始化后先将 [项目设计提示词](docs/DESIGN-PROMPT.md) 交给当前Agent；它应展示实际路径并以已有用户/场景/流程素材对齐设计者、研究与取舍原则。癌种项目另有 [完整专用提示词](prompts/NEW-CANCER-WORKBENCH.md)。需求见 [BRIEF](docs/BRIEF.md)，规格见 [SPEC](docs/SPEC.md)，任务见 [TASKS](docs/TASKS.md)；先读 [AGENTS](AGENTS.md)。CLI输出交接与首问，实际对话由Agent接续。
 
+## 疾病概要
+
+按 docs/36-DISEASE-PRIMER.md 同一四段口径（定义 → 医学资料规范和指南情况 → 目前治疗全景概要 → 发展趋势）在 `prototypes/v0.2/primer-data.js`（`window.DISEASE_PRIMER`）维护同一份疾病精炼概要；顶栏「?」与首页状态卡两个入口打开同一整页面板（`#disease-primer`，由 `assets/patterns/disease-primer.js` 运行时创建）。段内每条结论带来源行；未取得原件的标注「未取得原件，据二次来源」；「发展趋势」只写已发生事实（指南版本、监管批件、在研登记数量），不含展望与推荐；「选哪个方案」固定出口是「这一句需要问你的医生」。探针：`node scripts/probe-disease-primer.mjs --url http://127.0.0.1:<端口>/prototypes/v0.2/index.html`。
+
 ## 开发顺序
 
 先共创SPEC和候选数据关系，再交付HTML交互工作台；由用户确认对应版本/模块后，复核SCHEMA/API并实现生产功能。确认记录见docs/PROTOTYPE-REVIEW.md；模型不依赖前端Tab/流程。模板骨架不是业务已确认。
