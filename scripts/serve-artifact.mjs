@@ -61,11 +61,44 @@ if (typeof openStore !== 'function') {
   process.exit(1)
 }
 
-const store = openStore({ path: db })
-const seeded = typeof store.seedIfEmpty === 'function' ? store.seedIfEmpty() : { seeded: false }
-const handler = createHandler(store, {
+/* 开发态独立启动（与宿主 apply 同一条服务路径，见 dsh/index.js）：
+   Workbench(root) → services → createHandler({ apiBase, publicDir, services })。
+   开发资料目录默认仓库旁 .devdata（checkDataDir 拒绝 主目录/桌面/下载根/tmp，与生产同一套校验）。 */
+const { checkDataDir } = await import(join(pkgDir, 'dsh/server.js'))
+const { Workbench } = await import(join(pkgDir, 'dsh/workbench.js'))
+const { API_BASE } = await import(join(pkgDir, 'lib/identity.js')).catch(() => ({ API_BASE: '' }))
+const devRoot = opt('data-root', join(pkgDir, '.devdata'))
+const verdict = checkDataDir(devRoot)
+if (!verdict.ok) {
+  console.error(`✗ 开发资料目录不可用：${devRoot} → ${verdict.reason}`)
+  process.exit(1)
+}
+const workbench = new Workbench({ root: verdict.dir })
+workbench.open()
+const seeded = workbench.seeded || { seeded: false }
+const services = {
   version: pkg.version,
-  uiPrefix: `${API_PREFIX}/ui`,
+  capabilities: ['bootstrap', 'subjects', 'records', 'trial-profile', 'trials', 'saved-trials', 'data-root'],
+  bootstrap: () => workbench.bootstrap(),
+  listProfiles: () => workbench.listProfiles(),
+  createSubject: (input) => workbench.createSubject(input),
+  deleteSubject: (key) => workbench.deleteSubject(key),
+  getRecords: (key) => workbench.getRecords(key),
+  saveRecords: (key, records) => workbench.saveRecords(key, records),
+  getTrialProfile: (key) => workbench.getTrialProfile(key),
+  saveTrialProfile: (key, input) => workbench.saveTrialProfile(key, input),
+  trialSearch: (query) => workbench.trialSearch(query),
+  trialMatch: (key, query) => workbench.trialMatch(key, query),
+  savedTrials: (key) => workbench.savedTrials(key),
+  saveTrial: (key, rec) => workbench.saveTrial(key, rec),
+  removeTrial: (key, id) => workbench.removeTrial(key, id),
+  dataRoot: () => workbench.dataRoot,
+  setDataRoot: (dir) => workbench.setDataRoot(dir),
+}
+const handler = createHandler({
+  apiBase: API_BASE,
+  publicDir: join(pkgDir, 'public'),
+  services,
 })
 
 const server = createServer((req, res) => {
@@ -75,7 +108,7 @@ const server = createServer((req, res) => {
   })
 })
 server.listen(port, '127.0.0.1', () => {
-  console.log(`产物服务：http://127.0.0.1:${port}${API_PREFIX}/ui/`)
+  console.log(`产物服务：http://127.0.0.1:${port}${API_BASE}/ui/`)
   console.log(`包目录：${pkgDir}`)
   console.log(`数据库：${db}${seeded?.seeded ? '（已灌演示数据）' : '（已有数据）'}`)
 })
