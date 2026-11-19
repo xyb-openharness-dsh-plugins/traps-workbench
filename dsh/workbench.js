@@ -11,7 +11,7 @@ import { openStore, closeStore, migrate } from './store.js'
 import { seedDemoData, hasDemoData } from './demo.js'
 import { DB_FILE } from '../lib/identity.js'
 import { version } from '../lib/version.js'
-import { createTrialService } from './trials.js'
+import { createTrialService } from './trial-match.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
