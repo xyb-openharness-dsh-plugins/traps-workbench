@@ -6,7 +6,25 @@
 
 ## 疾病概要
 
-按 docs/36-DISEASE-PRIMER.md 同一四段口径（定义 → 医学资料规范和指南情况 → 目前治疗全景概要 → 发展趋势）在 `prototypes/v0.2/primer-data.js`（`window.DISEASE_PRIMER`）维护同一份疾病精炼概要；顶栏「?」与首页状态卡两个入口打开同一整页面板（`#disease-primer`，由 `assets/patterns/disease-primer.js` 运行时创建）。段内每条结论带来源行；未取得原件的标注「未取得原件，据二次来源」；「发展趋势」只写已发生事实（指南版本、监管批件、在研登记数量），不含展望与推荐；「选哪个方案」固定出口是「这一句需要问你的医生」。探针：`node scripts/probe-disease-primer.mjs --url http://127.0.0.1:<端口>/prototypes/v0.2/index.html`。
+> 本节为患者可读精炼版；交互面板（顶栏「?」与首页状态卡两个入口打开同一整页 `#disease-primer`）由 `prototypes/v0.2/primer-data.js`（`window.DISEASE_PRIMER`）+ `assets/patterns/disease-primer.{js,css}` 提供，两处同源。文字人工整理、未经临床审核；整体属第 ② 层（解释），不做任何个人判断，「选哪个方案」固定出口是「这一句需要问你的医生」。
+
+### 定义
+
+TRAPS（肿瘤坏死因子受体相关周期性综合征，旧称「家族性 Hibernian 热」）由 TNFRSF1A 基因杂合致病变异引起，常染色体显性遗传（外显率不完全）。典型发作每次持续 1–3 周（文献多为 7–21 天），常见游走性肌痛伴移动性红斑、眶周水肿、结膜炎、腹痛、关节痛；多数儿童期起病。长期持续炎症可致 AA 淀粉样变（肾脏最常受累），这是规范随访关注的原因之一。来源：NCI GeneReviews TRAPS 专章（NBK586171，2022 首版持续更新，2026-11-20 HEAD 核验 HTTP 200）；MedlinePlus Genetics。
+
+### 医学资料规范和指南情况
+
+已取得原件并核验的：GeneReviews 专章（网页正文）、MedlinePlus Genetics 页、PRINTO TRAPS 家长手册中文版、Cudrici et al. 2020 综述（PMC7246474）、Kuemmerle-Deschner et al. 2020 系统综述（PMC7722275）。仅题录未取得全文的：Eurofever/PRINTO 2019 分类标准（PMID 31018962；出版社直链 403）。**未查到中国官方针对 TRAPS 的专门指南**；国家《罕见病诊疗指南》系列未收录本病专门章节（2026-11-20 公开检索），缺口如实记录。逐行台账见 `prototypes/v0.2/primer-data.js` 的 evidence 段。
+
+### 目前治疗全景概要
+
+按公开文献只列**类别**级概述——非甾体抗炎药、糖皮质激素（发作期）、IL-1 通路生物制剂（canakinumab 等，有 RCT 证据背景）、传统免疫抑制剂；不列具体药物选择、不给选择顺序、不写疗效数值与移植指征，也不判断哪一类适合谁。方案由医生按发作频率、严重程度与家族史制定。来源：Cudrici et al. 2020；Kuemmerle-Deschner et al. 2020。
+
+### 发展趋势
+
+（只写已发生、有日期或版本号的事实）2019 年 Eurofever/PRINTO 周期热分类标准发表（Ann Rheum Dis 2019;78(8):1025–1035）；IL-1 通路靶向药物在遗传性周期热的 RCT 证据发表于 2018–2020（登记与审批状态以药监官方页为准，本台不推断）；美国 ClinicalTrials.gov 现行登记中 TRAPS/TNFRSF1A 相关研究以本机快照为准（2026-11-20 快照 138 条、相关 78 条，见 `research/traps/manifest.json`）。
+
+探针：`node scripts/probe-disease-primer.mjs --url http://127.0.0.1:<端口>/prototypes/v0.2/index.html`（裸跑默认打 starter 参考页、失败关闭；只验参考实现才加 `--allow-examples`）。
 
 ## 开发顺序
 
