@@ -699,6 +699,20 @@ render = function () {
 
 window.addEventListener('message', hbOnHostMessage)
 
+/* 外链三步兜底（docs/40 §1.4 / L129）：沙箱拦截 target=_blank 是静默的。
+   点击代理：先 window.open；拿到空返回值 → postMessage <pkg>:open-external 交壳层代开。 */
+document.addEventListener('click', function (ev) {
+  var link = ev.target && ev.target.closest ? ev.target.closest('a[target="_blank"]') : null
+  if (!link) return
+  var url = link.getAttribute('href') || ''
+  if (!/^https?:/i.test(url)) return
+  var opened = null
+  try { opened = window.open(url, '_blank', 'noopener') } catch (e) { opened = null }
+  if (!opened && window.parent !== window) {
+    try { window.parent.postMessage({ type: 'traps:open-external', url: url }, window.location.origin) } catch (e2) { /* 壳层不在 */ }
+  }
+}, true)
+
 document.addEventListener('click', function (event) {
   const t = event.target
   if (!(t instanceof Element)) return
